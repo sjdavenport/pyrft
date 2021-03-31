@@ -29,6 +29,9 @@ def wfield(mask, fibersize, field_type = 'N', field_params = 3):
       # If a tuple generate a mask of all ones
       masksize = mask
       mask = np.ones(masksize, dtype = bool)
+  elif isinstance(mask, int):
+      masksize = (mask,);
+      mask = np.ones(masksize, dtype = bool)
   else:
       raise Exception("The mask is not of the right form")
   

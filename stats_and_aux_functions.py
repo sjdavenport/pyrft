@@ -51,7 +51,7 @@ def mvtstat(data):
   
   return(tstat, xbar, std_dev)
 
-def contrast_tstats(lat_data, X, C):
+def contrast_tstats(lat_data, X, C, check_error = 1):
     """ A function to compute the voxelwise t-statistics for a set of contrasts
   ----------------------------------------------------------------------------
   ARGUMENTS:
@@ -59,6 +59,9 @@ def contrast_tstats(lat_data, X, C):
   - X:         an N by p numpy array of covariates (p being the number of parameters)
   - C:         an L by p numpy matrix for which each row is a contrast (where 
                L is the number of constrasts)
+  - check_error   0/1 value determining whether to perform error checking or not
+                  (not always necessary e.g. during a permutation loop etc) default
+                  is 1 i.e. to perform error checking
   ----------------------------------------------------------------------------
   OUTPUT:
   - tstat_field   an object of class field which has spatial size the same as 
@@ -68,7 +71,7 @@ def contrast_tstats(lat_data, X, C):
   # One Sample tstat
   Dim = (3,3); N = 30; categ = np.zeros(N)
   X = groupX(categ); C = np.array(1); lat_data = pr.wfield(Dim,N)
-  tstat = contrast_tstats(lat_data, X, C)  
+  tstat, residuals = contrast_tstats(lat_data, X, C)  
   # Compare to mvtstat:
   print(tstat.field.reshape(lat_data.masksize)); print(mvtstat(lat_data.field)[0])
       
@@ -83,7 +86,21 @@ def contrast_tstats(lat_data, X, C):
   tstats = contrast_tstats(lat_data, X, C)
   ----------------------------------------------------------------------------
     """
-      # Ensure C is a numpy array
+    # Error check the inputs
+    if check_error == 1:
+        C, N, p = contrast_error_checking(lat_data,X,C)
+        
+    # Having now run error checking calculate the contrast t-statistics
+    tstat_field, residuals = constrast_tstats_noerrorchecking(lat_data, X, C)
+    
+    return tstat_field, residuals
+
+def contrast_error_checking(lat_data,X,C):
+    """ A function which performs error checking on the contrast data to ensure 
+    that it has the right dimensions.
+    """
+    ### Error Checking
+    # Ensure that C is a numpy array 
     if type(C) != np.ndarray:
         raise Exception("C must be a numpy array")
         
@@ -109,11 +126,8 @@ def contrast_tstats(lat_data, X, C):
     # Ensure that the dimensions of X and lat_data are compatible
     if N != lat_data.fibersize:
         raise Exception('The number of subjects in of X and lat_data do not match')
-    
-    # Having now run error checking calculate the contrast t-statistics
-    tstat_field = constrast_tstats_noerrorchecking(lat_data, X, C)
-    
-    return tstat_field
+        
+    return C, N, p
 
 def constrast_tstats_noerrorchecking(lat_data, X, C):
     """ A function to compute the voxelwise t-statistics for a set of contrasts
@@ -134,19 +148,19 @@ def constrast_tstats_noerrorchecking(lat_data, X, C):
   # One Sample tstat
   Dim = (3,3); N = 30; categ = np.zeros(N)
   X = groupX(categ); C = np.array([[1]]); lat_data = pr.wfield(Dim,N)
-  tstat = _constrast_tstats_4perm(lat_data, X, C)  
+  tstat = constrast_tstats_noerrorchecking(lat_data, X, C)  
   # Compare to mvtstat:
   print(tstat.field.reshape(lat_data.masksize)); print(mvtstat(lat_data.field)[0])
       
   # Two Sample tstat
   Dim = (10,10); N = 30; categ = np.random.binomial(1, 0.4, size = N)
   X = groupX(categ); C = np.array([[1,-1]]); lat_data = pr.wfield(Dim,N)
-  tstats = _constrast_tstats_4perm(lat_data, X, C)
+  tstats = constrast_tstats_noerrorchecking(lat_data, X, C)
   
   # 3 Sample tstat (lol)
   Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
   X = groupX(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
-  tstats = _constrast_tstats_4perm(lat_data, X, C)
+  tstats = constrast_tstats_noerrorchecking(lat_data, X, C)
   ----------------------------------------------------------------------------
     """
     # Calculate the number of contrasts
@@ -169,7 +183,7 @@ def constrast_tstats_noerrorchecking(lat_data, X, C):
     
     # Compute the estimate of the variance via the residuals (I-P)Y
     # Uses a trick adding (1,) so that multiplication is along the last column!
-    # Note no need to reshape back not doing so will be useful when dividing by the std
+    # Note no need to reshape back yet not doing so will be useful when dividing by the std
     residuals = rfmate @ lat_data.field.reshape( lat_data.fieldsize + (1,) ) 
     
     # Square and sum over subjects to calculate the variance
@@ -187,7 +201,10 @@ def constrast_tstats_noerrorchecking(lat_data, X, C):
     # Generate the field of tstats
     tstat_field = pr.Field(tstats, lat_data.mask)
     
-    return tstat_field
+    # Reshape the residuals back to get rid of the trailing dimension
+    residuals = residuals.reshape(lat_data.fieldsize)
+    
+    return tstat_field, residuals
 
 def groupX(categ):
   """ A function to compute the covariate matrix X for a given set of categories

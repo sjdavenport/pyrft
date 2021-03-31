@@ -52,7 +52,7 @@ print(exField)
         # Ensure that the size of the mask matches the size of the field
         if self.D > 1 and field.shape[0:self.D] != masksize:
             raise Exception("The size of the spatial field must match the mask")
-        elif self.D == 1 and field.shape[0:self.D] != masksize[1]:
+        elif self.D == 1 and field.shape[0:self.D][0] != masksize[0]:
             raise Exception("The size of the spatial field must match the mask")
             
         # If it passes the above tests assign the mask to the array
@@ -94,7 +94,7 @@ print(exField)
                 if value.shape[0:self.D] != self.masksize:
                     raise ValueError("The size of the field must be compatible with the mask")
             else:
-                if value.shape[0:self.D] != self.masksize[1]:
+                if value.shape[0:self.D][0] != self.masksize[0]:
                     raise ValueError("The size of the field must be compatible with the mask")
         self.__field = value 
         self.fieldsize = value.shape
