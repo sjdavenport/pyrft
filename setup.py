@@ -13,7 +13,9 @@ setup(
     install_requires=[
         'numpy',
         'sanssouci',
-        'matplotlib'
+        'matplotlib',
+        'sklearn',
+        'scipy'
     ],
     version = '0.0.1',
     license='MIT',

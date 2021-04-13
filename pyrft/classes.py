@@ -2,27 +2,38 @@
     Random field classes
 """
 import numpy as np
+import pyrft as pr
 
 class Field:
-    """
-  Field class
-  -----------------------------------------------------------------------------
-  ARGUMENTS
-  - field:  a numpy array of field
-  - mask:  a boolean numpty array giving the spatial mask the size of which 
+    """ Field class
+    Parameters
+  --------------------
+  field:  a numpy.ndarray of shape (Dim) or (Dim, fibersize)
+      Here Dim is the size of the field and fibersize is an index for the fields,
+      typically fibersize is the number of subjects.
+
+  mask:  Bool,
+      a boolean numpty array giving the spatial mask the size of which 
            must be compatible with the field
-  -----------------------------------------------------------------------------
-  OUTPUT
-  - An object of class field
-  -----------------------------------------------------------------------------
-  EXAMPLES
+           
+  Returns
+  --------------------
+  An object of class field
+  
+  Examples
+  --------------------
   # 1D
 field = np.random.randn(100,30)
-mask = np.ones((1,100), dtype = bool)
+mask = np.ones((100,1), dtype = bool)
 exField = pr.Field(field, mask)
 print(exField)
   # 2D
 field = np.random.randn(100,100,30)
+mask = np.ones((100,100), dtype = bool)
+exField = pr.Field(field, mask)
+print(exField)
+# 2D no subjects
+field = np.random.randn(100,100)
 mask = np.ones((100,100), dtype = bool)
 exField = pr.Field(field, mask)
 print(exField)
@@ -40,23 +51,34 @@ print(exField)
         # Assign the dimension
         self.D = len(masksize)
         
-        # Obtain the fibersize
-        self.fibersize = self.field.shape[self.D:][0]
-        
         # Cover the 1D case where the mask is a vector! 
         # (Allows for row and column vectors)
         if (self.D == 2) and (masksize[0] == 1 or masksize[1] == 1):
             self.D = 1
+            # Force the mask to be a row vector
+            if masksize[1] == 1:
+                mask = mask.transpose()
             self.masksize = tuple(np.sort(masksize))
-            
+        else:
+            # In D > 1 just assign the mask size
+            self.masksize = masksize
+        
+        # Obtain the fibersize
+        if self.masksize == self.fieldsize:
+            # If the size of the mask is the size of the data then there is just 
+            # one field so the fibersize is set to 1
+            self.fibersize = 1
+        else:
+            self.fibersize = self.field.shape[self.D:][0]
+        
         # Ensure that the size of the mask matches the size of the field
-        if self.D > 1 and field.shape[0:self.D] != masksize:
+        if self.D > 1 and field.shape[0:self.D] != self.masksize:
             raise Exception("The size of the spatial field must match the mask")
-        elif self.D == 1 and field.shape[0:self.D][0] != masksize[0]:
+        elif self.D == 1 and field.shape[0:self.D][0] != self.masksize[1]:
+            # If the size of the mask doesn't match the field then return an error
             raise Exception("The size of the spatial field must match the mask")
             
         # If it passes the above tests assign the mask to the array
-        self.masksize = masksize
         self.mask = mask
         
     def __str__(self):
@@ -138,3 +160,34 @@ print(exField)
     fieldsize = property(_get_fieldsize, _set_fieldsize)
     masksize = property(_get_masksize, _set_masksize)
                          
+    
+def makefield(array, fibersize = 1):
+    """ conv2field converts a numpy array to am object of class field
+    
+  Parameters
+  --------------------
+  array:  a numpy.ndarray of shape (Dim, fibersize),
+      Here Dim is the spatial size and fibersize is the index dimension
+  fibersize:  int,
+         specifies the size of the fiber, typically this is 1 i.e. when the
+         last dimension of array corresponds to the fibersize
+           
+  Returns
+  --------------------
+  F: An object of class field with 
+  
+  Examples
+  --------------------
+data = np.random.randn(100,30)
+F = pr.makefield(data)
+    """
+    fieldsize = array.shape
+    D = len(fieldsize) - fibersize
+    if D == 1:
+        masksize = (fieldsize[0], 1)
+    else:
+        masksize = fieldsize[0:D]
+    mask = np.ones(masksize, dtype = bool)
+    
+    F = pr.Field(array, mask)
+    return F

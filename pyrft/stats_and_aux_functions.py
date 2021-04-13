@@ -4,28 +4,32 @@ A file contain statistics functions
 """
 # Import statements
 import numpy as np
-import sys
-sys.path.insert(0, 'C:\\Users\\12SDa\\davenpor\\davenpor\\Toolboxes' )
 import pyrft as pr
 
 
 def mvtstat(data):
   """ A function to compute the multivariate t-statistic
-  ----------------------------------------------------------------------------
-  Inputs:
-  - data:   a Dim by nsubj numpy array
+  
+  Parameters
+  -----------------
+  data:  numpy.ndarray of shape (Dim, nsubj)
+      Here Dim is the size of the field and nsubj is the number of subjects
 
-  Returns:
-  - tstat:  a numpy array of size Dim where each entry is the t-statistic
-  - mean:   a numpy array of size Dim where each entry is the mean
-  - std:    a numpy array of size Dim where each entry is the standard deviation
-  ----------------------------------------------------------------------------
-  Examples:
+  Returns
+  -----------------
+  tstat:   numpy.ndarray of shape (Dim)
+          Each entry is the is the t-statistic calulcated across subjects
+  mean:    numpy.ndarray of shape (Dim)
+          Each entry is the is the mean calulcated across subjects
+  std:     numpy.ndarray of shape (Dim)
+          Each entry is the is the standard deviation calulcated across subjects
+  
+  Examples
+  -----------------
   # tstat of random noise
   noise = np.random.randn(50,50,20); arrays = mvtstat(noise);  tstat = arrays[0]
   # For comparison to MATLAB
   a = np.arange(12).reshape((3,4)).transpose()+1; tstat = mvtstat(a)[0]
-  ----------------------------------------------------------------------------
   """
   # Obtain the size of the array
   sD = np.shape(data)
@@ -53,21 +57,30 @@ def mvtstat(data):
 
 def contrast_tstats(lat_data, X, C, check_error = 1):
     """ A function to compute the voxelwise t-statistics for a set of contrasts
-  ----------------------------------------------------------------------------
-  ARGUMENTS:
-  - lat_data:  an object of class field consisting of data for N subjects
-  - X:         an N by p numpy array of covariates (p being the number of parameters)
-  - C:         an L by p numpy matrix for which each row is a contrast (where 
-               L is the number of constrasts)
-  - check_error   0/1 value determining whether to perform error checking or not
-                  (not always necessary e.g. during a permutation loop etc) default
-                  is 1 i.e. to perform error checking
-  ----------------------------------------------------------------------------
-  OUTPUT:
-  - tstat_field   an object of class field which has spatial size the same as 
-                  input data and fibersize equal to the number of contrasts
-  ----------------------------------------------------------------------------
-  EXAMPLES:
+  Parameters
+  -----------------
+  lat_data:  a numpy.ndarray of shape (Dim, N) or an object of class field
+      giving the data where Dim is the spatial dimension and N is the number of subjects
+      if a field then the fibersize must be 1 and the final dimension must be 
+      the number of subjects
+  X: a numpy.ndarray of size (N,p)
+        giving the covariates (p being the number of parameters)
+  C: a numpy.ndarray of size (L,p)  
+        corresponding to the contrast matrix, such that which each row is a 
+        contrast vector (where L is the number of constrasts)
+  check_error:  Bool,
+          determining whether to perform error checking or not  (not always 
+          necessary e.g. during a permutation loop etc) default  is 1 i.e. to 
+          perform error checking
+
+  Returns
+  -----------------
+  tstat_field: an object of class field 
+          which has spatial size the same as input data and fibersize equal 
+          to the number of contrasts
+  
+  Examples
+  -----------------
   # One Sample tstat
   Dim = (3,3); N = 30; categ = np.zeros(N)
   X = groupX(categ); C = np.array(1); lat_data = pr.wfield(Dim,N)
@@ -84,11 +97,14 @@ def contrast_tstats(lat_data, X, C, check_error = 1):
   Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
   X = groupX(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
   tstats = contrast_tstats(lat_data, X, C)
-  ----------------------------------------------------------------------------
     """
     # Error check the inputs
     if check_error == 1:
         C, N, p = contrast_error_checking(lat_data,X,C)
+        
+    # Convert the data to be a field if it is not one already
+    if type(lat_data) == np.ndarray:
+        lat_data = pr.makefield(lat_data)
         
     # Having now run error checking calculate the contrast t-statistics
     tstat_field, residuals = constrast_tstats_noerrorchecking(lat_data, X, C)
@@ -133,18 +149,29 @@ def constrast_tstats_noerrorchecking(lat_data, X, C):
     """ A function to compute the voxelwise t-statistics for a set of contrasts
     but with no error checking! For input into permutation so you do not have to
     run the error checking every time.
-  ----------------------------------------------------------------------------
-  ARGUMENTS:
-  - lat_data:  an object of class field consisting of data for N subjects
-  - X:         an N by p numpy array of covariates (p being the number of parameters)
-  - C:         an L by p numpy matrix for which each row is a contrast (where 
-               L is the number of constrasts)
-  ----------------------------------------------------------------------------
-  OUTPUT:
-  - tstat_field   an object of class field which has spatial size the same as 
-                  input data and fibersize equal to the number of contrasts
-  ----------------------------------------------------------------------------
-  EXAMPLES:
+
+    Parameters
+  -----------------
+  lat_data:  an object of class field 
+          the data for N subjects on which to calculate the contrasts
+  X: a numpy.ndarray of size (N,p)
+        giving the covariates (p being the number of parameters)
+  C: a numpy.ndarray of size (L,p)  
+        corresponding to the contrast matrix, such that which each row is a 
+        contrast vector (where L is the number of constrasts)
+  check_error:  Bool,
+          determining whether to perform error checking or not  (not always 
+          necessary e.g. during a permutation loop etc) default  is 1 i.e. to 
+          perform error checking
+
+  Returns
+  -----------------
+  tstat_field: an object of class field 
+          which has spatial size the same as input data and fibersize equal 
+          to the number of contrasts
+  
+  Examples
+  -----------------
   # One Sample tstat
   Dim = (3,3); N = 30; categ = np.zeros(N)
   X = groupX(categ); C = np.array([[1]]); lat_data = pr.wfield(Dim,N)
@@ -161,7 +188,6 @@ def constrast_tstats_noerrorchecking(lat_data, X, C):
   Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
   X = groupX(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
   tstats = constrast_tstats_noerrorchecking(lat_data, X, C)
-  ----------------------------------------------------------------------------
     """
     # Calculate the number of contrasts
     L = C.shape[0]  # constrasts
@@ -208,21 +234,23 @@ def constrast_tstats_noerrorchecking(lat_data, X, C):
 
 def groupX(categ):
   """ A function to compute the covariate matrix X for a given set of categories
-  ----------------------------------------------------------------------------
-  ARGUMENTS:
-  - categ:  a tuple of integers of length N(number of subjects) where each entry is 
-            number of the category that a given subject belongs to 
-            (enumerated from 0 to ncateg - 1)
-            E.g: (0,1,1,0) corresponds to 4 subjects, 2 categories and
+  
+  Parameters
+  ------------------
+  categ:  a tuple of integers of length N
+      where N is the number of subjects). Each entry is number of the category 
+        that a given subject belongs to (enumerated from 0 to ncateg - 1)
+        E.g: (0,1,1,0) corresponds to 4 subjects, 2 categories and
                  (0,1,2,3,3,2) corresponds to 6 subjects and 4 categories
             Could make a category class!
-  ----------------------------------------------------------------------------
-  OUTPUT:
-  - X:      a design matrix that can be used to assign the correct categories
-  ----------------------------------------------------------------------------
-  EXAMPLES:
+  
+  Returns
+  ------------------
+  X: a design matrix that can be used to assign the correct categories
+  
+  Examples
+  ------------------
   categ = (0,1,1,0); groupX(categ)
-  ----------------------------------------------------------------------------
   """
   # Calculate the number of subjects
   N = len(categ) 

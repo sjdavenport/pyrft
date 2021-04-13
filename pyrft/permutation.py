@@ -1,11 +1,7 @@
 """
 Functions to run permutation methods
 """
-import sys
-sys.path.insert(0, 'C:\\Users\\12SDa\\global\\Intern\\SanSouciCode')
 import sanssouci as ss
-import numpy as np
-sys.path.insert(0, 'C:\\Users\\12SDa\\davenpor\\davenpor\\Toolboxes' )
 import pyrft as pr
 from sklearn.utils import check_random_state
 from scipy.stats import t
@@ -13,25 +9,43 @@ from scipy.stats import t
 def boot_contrasts(lat_data, X, C, B = 1000, replace = True):
     """ A function to compute the voxelwise t-statistics for a set of contrasts
       and their p-value by bootstrapping the residuals
-  ----------------------------------------------------------------------------
-  ARGUMENTS:
-  - lat_data:  an object of class field consisting of data for N subjects
-  - X:         an N by p numpy array of covariates (p being the number of parameters)
-  - C:         an L by p numpy matrix for which each row is a contrast (where 
-               L is the number of constrasts)
-  - B:         an integer giving the number of bootstraps to do (default is 1000)
-  - replace    True or False if True (default) then the residuals are sampled with
-               replacement (i.e. a bootstrap), if False then they are sampled 
-               without replacement resulting in a permutation of the data
-  ----------------------------------------------------------------------------
-  OUTPUT:
-  - tstat_field   an object of class field which has spatial size the same as 
+  
+  Parameters
+  -----------------
+  lat_data:  a numpy.ndarray of shape (Dim, N) or an object of class field
+      giving the data where Dim is the spatial dimension and N is the number of subjects
+      if a field then the fibersize must be 1 and the final dimension must be 
+      the number of subjects
+  X: a numpy.ndarray of size (N,p)
+        giving the covariates (p being the number of parameters)
+  C: a numpy.ndarray of size (L,p)  
+        corresponding to the contrast matrix, such that which each row is a 
+        contrast vector (where L is the number of constrasts)
+  B: int,
+      giving the number of bootstraps to do (default is 1000)
+  replace:  Bool 
+      if True (default) then the residuals are sampled with replacement 
+      (i.e. a bootstrap), if False then they are sampled without replacement 
+      resulting in a permutation of the data
+
+  Returns
+  -----------------
+  tstat_field: an object of class field,
+          which has spatial size the same as 
                   input data and fibersize equal to the number of contrasts
-  ----------------------------------------------------------------------------
-  EXAMPLES:
+  
+  Examples
+  -----------------
       
-  ----------------------------------------------------------------------------
     """
+    # Convert the data to be a field if it is not one already
+    if type(lat_data) == np.ndarray:
+        lat_data = pr.makefield(lat_data)
+        
+    # Ensure that the fibersize of the field is 1
+    if lat_data.fibersize > 1:
+        raise Exception("The fibersize of the field must be 1")
+        
     # Error check the inputs and obtain the size of X
     C, N, p = pr.contrast_error_checking(lat_data,X,C)
         
@@ -79,22 +93,36 @@ def boot_contrasts(lat_data, X, C, B = 1000, replace = True):
 def perm_contrasts(lat_data, X, C, B):
     """ A function to compute the voxelwise t-statistics for a set of contrasts
       and their p-value using Manly type permutation
-  ----------------------------------------------------------------------------
-  ARGUMENTS:
-  - lat_data:  an object of class field consisting of data for N subjects
-  - X:         an N by p numpy array of covariates (p being the number of parameters)
-  - C:         an L by p numpy matrix for which each row is a contrast (where 
-               L is the number of constrasts)
-  - B:         
-  ----------------------------------------------------------------------------
-  OUTPUT:
-  - tstat_field   an object of class field which has spatial size the same as 
-                  input data and fibersize equal to the number of contrasts
-  ----------------------------------------------------------------------------
-  EXAMPLES:
       
-  ----------------------------------------------------------------------------
+  Parameters
+  -----------------
+  lat_data:  an object of class field consisting of data for N subjects
+  X: a numpy.ndarray of size (N,p)
+        giving the covariates (p being the number of parameters)
+  C: a numpy.ndarray of size (L,p)  
+        corresponding to the contrast matrix, such that which each row is a 
+        contrast vector (where L is the number of constrasts)
+  B: int,
+      giving the number of bootstraps to do (default is 1000)
+  replace:  Bool 
+      if True (default) then the residuals are sampled with replacement 
+      (i.e. a bootstrap), if False then they are sampled without replacement 
+      resulting in a permutation of the data
+
+  Returns
+  -----------------
+  tstat_field: an object of class field,
+          which has spatial size the same as 
+                  input data and fibersize equal to the number of contrasts
+  
+  Examples
+  -----------------
+      
     """
+    # Convert the data to be a field if it is not one already
+    if type(lat_data) == np.ndarray:
+        lat_data = pr.makefield(lat_data)
+    
     # Error check the inputs and obtain the size of X
     C, N, p = pr.contrast_error_checking(lat_data,X,C)
     
