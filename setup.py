@@ -22,7 +22,7 @@ setup(
     author='Samuel DAVENPORT',
     download_url='https://github.com/sjdavenport/pyrft/',
     author_email='samuel.davenport@math.univ-toulouse.fr',
-    url='https://github.com/sjdavenport/pyrft/,
+    url='https://github.com/sjdavenport/pyrft/',
     long_description=long_description,
     description='Python Toolbox of Functions for Analysing Random fields',
     keywords='Random field Theory, fMRI, Post-hoc inference',
