@@ -3,10 +3,17 @@ Testing bootstrapping in the linear model
 """
 import pyrft as pr
 import numpy as np
-Dim = 1; N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
+Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
 X = pr.groupX(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
 
-minP, orig_pvalues, pivotal_stats = pr.boot_contrasts(lat_data, X, C)
+minP, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, X, C)
+
+orig_pvalues_sorted = np.array([np.sort(np.ravel(orig_pvalues.field))])
+    
+# Get the minimum p-value over voxels and contrasts (include the orignal in the permutation set)
+print(orig_pvalues_sorted[0,0])
+    # Obtain the pivotal statistic used for JER control
+print(np.amin(ss.t_inv_linear(orig_pvalues_sorted)))
 
 # %%
 ### One sample, one voxel test
@@ -19,7 +26,7 @@ store_origs = np.zeros((1,niters))
 for I in np.arange(niters):
     print(I) 
     lat_data = pr.wfield(Dim,N)
-    minPperm, orig_pvalues, pivotal_stats = pr.boot_contrasts(lat_data, X, C, 100)
+    minPperm, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, X, C, 100)
     alpha_quantile = np.quantile(minPperm, alpha)
     store_origs[0,I] = minPperm[0]
     if minPperm[0] < alpha_quantile:
@@ -40,7 +47,7 @@ store_origs = np.zeros((1,niters))
 for I in np.arange(niters):
     print(I) 
     lat_data = pr.wfield(Dim,N)
-    minPperm, orig_pvalues, pivotal_stats = pr.boot_contrasts(lat_data, X, C, B)
+    minPperm, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, X, C, B)
     alpha_quantile = np.quantile(minPperm, alpha)
     store_origs[0,I] = minPperm[0]
     if minPperm[0] < alpha_quantile:
@@ -63,7 +70,7 @@ store_origs = np.zeros((1,niters))
 for I in np.arange(niters):
     print(I)
     lat_data = pr.wfield(Dim,N)
-    minPperm, orig_pvalues, pivotal_stats = pr.boot_contrasts(lat_data, X, C, B)
+    minPperm, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, X, C, B)
     alpha_quantile = np.quantile(minPperm, alpha)
     store_origs[0,I] = minPperm[0]
     if minPperm[0] < alpha_quantile:
@@ -93,7 +100,7 @@ for I in np.arange(niters):
     print(I) 
     lat_data = pr.wfield(Dim,N)
     lat_data.field[:,:,w2]=  lat_data.field[:,:,w2] + signal
-    minPperm, orig_pvalues, pivotal_stats = pr.boot_contrasts(lat_data, X, C, B)
+    minPperm, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, X, C, B)
     alpha_quantile = np.quantile(minPperm, alpha)
     store_origs[0,I] = minPperm[0]
     if minPperm[0] < alpha_quantile:
