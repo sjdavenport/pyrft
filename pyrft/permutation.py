@@ -96,8 +96,10 @@ def boot_contrasts(lat_data, X, C, B = 1000, t_inv = ss.t_inv_linear, replace = 
     bootstore = 0 
     if store_boots:
         L = C.shape[0]
-        m = np.prod(lat_data.fieldsize)
-        bootstore = np.zeros(L*m, B)
+        m = np.prod(lat_data.masksize)
+        bootstore = np.zeros((L*m, B))
+        print(bootstore.shape)
+        print(orig_pvalues_sorted.shape)
         bootstore[:,0] = orig_pvalues_sorted[0]
         
     # Calculate permuted stats

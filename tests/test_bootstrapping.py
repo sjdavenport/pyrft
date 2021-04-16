@@ -108,3 +108,24 @@ for I in np.arange(niters):
         
 FPR = number_of_false_positives/niters
 
+# %% Testing bootstorage
+import pyrft as pr
+import numpy as np
+Dim = (10,10); N = 100; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
+X = pr.groupX(categ); C = np.array([1,-1,0]); lat_data = pr.wfield(Dim,N)
+B = 100;
+
+minP, orig_pvalues, pivotal_stats, bs = pr.boot_contrasts(lat_data, X, C, B, ss.t_inv_linear, True, 1)
+
+
+for b in np.arange(B):
+    plt.plot(bs[:,b],color="blue")
+    
+# Calculate reference families
+m = bs.shape[0]
+lamb = np.arange(11)/10
+k = np.arange(m+1)
+
+for l in np.arange(len(lamb)):
+    plt.plot(lamb[l]*k/m,color="black")
+
