@@ -112,7 +112,7 @@ FPR = number_of_false_positives/niters
 import pyrft as pr
 import numpy as np
 Dim = (10,10); N = 100; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
-X = pr.groupX(categ); C = np.array([1,-1,0]); lat_data = pr.wfield(Dim,N)
+X = pr.groupX(categ); C = np.array([1,-1,0]); lat_data = pr.statnoise(Dim,N,4)
 B = 100;
 
 minP, orig_pvalues, pivotal_stats, bs = pr.boot_contrasts(lat_data, X, C, B, ss.t_inv_linear, True, 1)

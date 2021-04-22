@@ -232,6 +232,27 @@ def constrast_tstats_noerrorchecking(lat_data, X, C):
     
     return tstat_field, residuals
 
+def FWHM2sigma(FWHM):
+  """ A function translate the standard deviation to FWHM
+  
+  Parameters
+  -----------------
+  FWHM:    double,
+          a value specifying the full width half max 
+
+  Returns
+  -----------------
+  sigma:    double,
+          the sigma corresponding to the FWHM 
+  
+  Examples
+  -----------------
+  # FWHM = 3; sigma = FWHM2sigma(FWHM)
+  """
+  sigma = FWHM/np.sqrt(8*np.log(2));
+
+  return(sigma)
+
 def groupX(categ):
   """ A function to compute the covariate matrix X for a given set of categories
   
@@ -271,4 +292,25 @@ def groupX(categ):
       
   return X
   
+def modul(iterand, niterand = 100):
+  """ A function which allows you to easily check how a for loop is
+% progressing by displaying iterand iff it is evenly divided by niterand
+  
+  Parameters
+  ------------------
+  iterand:
+  niterand:
+  
+  Returns
+  ------------------
+  Prints iterand if niterand divides into iterand
+       
+  
+  Examples
+  ------------------
+  pr.modul(100,10)
+  pr.modul(3,5)
+  """
+  if (iterand % niterand == 0):
+      print(iterand)
     
