@@ -69,7 +69,12 @@ print(exField)
             # one field so the fibersize is set to 1
             self.fibersize = 1
         else:
-            self.fibersize = self.field.shape[self.D:][0]
+            self.fibersize = self.field.shape[self.D:]
+            if len(self.fibersize) == 1:
+                self.fibersize = self.field.shape[self.D:][0]
+            elif self.masksize == (1,1):
+                self.fibersize = self.field.shape[self.D+1:][0]
+                
         
         # Ensure that the size of the mask matches the size of the field
         if self.D > 1 and field.shape[0:self.D] != self.masksize:

@@ -57,7 +57,7 @@ FPR = number_of_false_positives/niters
 
 # %% Multiple contrasts - global null is false
 alpha = 0.1; niters = 1000;
-Dim = (10,10); N = 30; 
+Dim = (50,50); N = 30; 
 from sklearn.utils import check_random_state
 rng = check_random_state(101)
 categ = rng.choice(3, N, replace = True)
@@ -81,6 +81,10 @@ FPR = number_of_false_positives/niters
 # Note that this give inflated false positives for low N! E.g. N = 30! This gets better
 # as N is increased but worse and worse as Dim increases so Anderson may have missed
 # it in his FL paper as I'm fairly sure that the tests there were only done in 1D!!
+
+# %%
+C = np.array([[1,-1,0]]); 
+FWER_FPR, JER_FPR = pr.bootFPR(Dim, N, C)
 
 # %% Multiple contrasts - testing strong control
 alpha = 0.1; niters = 1000;
