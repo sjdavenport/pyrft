@@ -217,8 +217,11 @@ def constrast_tstats_noerrorchecking(lat_data, X, C):
     std_est = (np.sum(residuals**2,lat_data.D)/(N-p))**(1/2)
     
     # Compute the t-statistics
-    tstats = (C @ betahat).reshape(lat_data.masksize + (L,))/std_est
-    
+    if lat_data.D == 1:
+        tstats = (C @ betahat).reshape((lat_data.masksize[1],L))/std_est
+    else:
+        tstats = (C @ betahat).reshape(lat_data.masksize + (L,))/std_est
+        
     # Scale by the scaling constants to ensure var 1
     for l in np.arange(L):
         scaling_constant = (C[l,:] @ XTXinv @ C[l,:])**(1/2)

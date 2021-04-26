@@ -121,7 +121,7 @@ print(exField)
                 if value.shape[0:self.D] != self.masksize:
                     raise ValueError("The size of the field must be compatible with the mask")
             else:
-                if value.shape[0:self.D][0] != self.masksize[0]:
+                if value.shape[0:self.D][0] != self.masksize[1]:
                     raise ValueError("The size of the field must be compatible with the mask")
         self.__field = value 
         self.fieldsize = value.shape

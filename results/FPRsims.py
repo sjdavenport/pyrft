@@ -18,11 +18,12 @@ C = np.array([[1,-1,0],[0,1,-1]]);
 
 nsubj_vec = np.arange(10,101,10)
 dim_sides = np.array([25,50,100,200])
-dim_sides = np.array([1])
+nsubj_vec = np.array([100])
+dim_sides = np.array([100])
  
 # Initialize matrices to store the estimated FPRs
-store_JER = np.zeros((len(nsubj_vec), len(dim_sides)))
-store_FWER = np.zeros((len(nsubj_vec), len(dim_sides)))
+#store_JER = np.zeros((len(nsubj_vec), len(dim_sides)))
+#store_FWER = np.zeros((len(nsubj_vec), len(dim_sides)))
 
 # Choose the smoothness, the number of bootstraps and the number of iterations to use
 FWHM = 0; B = 100; niters = 1000
@@ -118,10 +119,20 @@ for J in np.arange(len(dim_sides)):
     np.savez(saveloc + '.npz', JER_FPR  = store_JER, FWER_FPR = store_FWER)
     
 # %%
-load_results = np.load('./FPRresults.npz')
-print(load_results['JER_FPR'])
-print(load_results['FWER_FPR'])
+#load_results = np.load('./FPRresults_all.npz')
+load_results = np.load('./FPRresults_singlecontrast_all.npz')
 
-load_results = np.load('./FPRresults_singlecontrast.npz')
-print(load_results['JER_FPR'])
-print(load_results['FWER_FPR'])
+JER_FPR = load_results['JER_FPR']
+FWER_FPR = load_results['FWER_FPR']
+
+nsubj_vec = np.arange(10,101,10)
+dim_sides = np.array([25,50,100,200])
+
+# Plot results:
+for I in np.arange(3):
+    if I == 2:
+        plt.plot(nsubj_vec[0:-1], JER_FPR[0:-1,I], label = '(' + str(dim_sides[I]) + ',' + str(dim_sides[I]) + ')')
+    else:
+        plt.plot(nsubj_vec, JER_FPR[:,I], label = '(' + str(dim_sides[I]) + ',' + str(dim_sides[I]) + ')')
+    
+plt.legend(loc="lower right")

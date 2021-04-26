@@ -35,10 +35,17 @@ i = 1000;
 lamb_vec = np.arange(i)/i
 plt.plot(lamb_vec, pr.t_beta(lamb_vec, 1, 10))
 
-lamb = 0.1; m = 1000; k = np.arange(m)
+lamb = 0.9; m = 1000; k = np.arange(m)
+plt.plot(k, pr.t_beta(lamb, k, m))
+
+lamb = 0.001; m = 1000; k = np.arange(100)
+plt.plot(k, pr.t_beta(lamb, k, m))
+
+
+lamb = np.exp(-10); m = 50; k = np.arange(m)
 plt.plot(k, pr.t_beta(lamb, k, m))
   """
-  # t_k^B(lambda) = F^{-1}(lambda) where F (beta.ppf) is the inverse of the
+  # t_k^B(lambda) = F^{-1}(lambda) where F (beta.ppf) is the cdf of the
   # beta(k, m+1-k) distribution. This yields the lambda quantile of this distribution
   return beta.ppf(lamb, k, m+1-k)
   

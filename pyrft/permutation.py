@@ -51,6 +51,12 @@ def boot_contrasts(lat_data, X, C, B = 1000, template = 'linear', replace = True
   
   Examples
   -----------------
+# 1D
+Dim = 5; N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
+X = pr.groupX(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
+minP, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, X, C)
+
+# 2D
 Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
 X = pr.groupX(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
 minP, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, X, C)
@@ -178,6 +184,11 @@ def bootFPR(Dim, nsubj, C, FWHM = 0,  X = 0, B = 100, niters = 1000, alpha = 0.1
       
   Examples  
   -----------------
+# 1D
+Dim = 5; nsubj = 30; C = np.array([[1,-1,0],[0,1,-1]]);
+FWER_FPR, JER_FPR = pr.bootFPR(Dim, nsubj, C)
+
+# 2D
 Dim = (10,10); nsubj = 30; C = np.array([[1,-1,0],[0,1,-1]]);
 FWER_FPR, JER_FPR = pr.bootFPR(Dim, nsubj, C)
   """
