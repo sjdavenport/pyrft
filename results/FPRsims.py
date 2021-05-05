@@ -22,8 +22,8 @@ nsubj_vec = np.array([100])
 dim_sides = np.array([100])
  
 # Initialize matrices to store the estimated FPRs
-#store_JER = np.zeros((len(nsubj_vec), len(dim_sides)))
-#store_FWER = np.zeros((len(nsubj_vec), len(dim_sides)))
+store_JER = np.zeros((len(nsubj_vec), len(dim_sides)))
+store_FWER = np.zeros((len(nsubj_vec), len(dim_sides)))
 
 # Choose the smoothness, the number of bootstraps and the number of iterations to use
 FWHM = 0; B = 100; niters = 1000
