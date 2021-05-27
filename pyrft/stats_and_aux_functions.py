@@ -78,6 +78,7 @@ def contrast_tstats(lat_data, X, C, check_error = 1):
   tstat_field: an object of class field 
           which has spatial size the same as input data and fibersize equal 
           to the number of contrasts
+   residuals: a
   
   Examples
   -----------------
