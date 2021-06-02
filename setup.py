@@ -15,7 +15,8 @@ setup(
         'sanssouci',
         'matplotlib',
         'sklearn',
-        'scipy'
+        'scipy',
+        'scikit-image'
     ],
     version = '0.0.1',
     license='MIT',

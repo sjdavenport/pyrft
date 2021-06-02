@@ -25,7 +25,7 @@ pr.find_clusters(np.array([[1,0,1],[1,1,0]]), 0.5, below = 1)
   """
   
   # Mask the data if that is possible
-  if not math.isnan(mask):
+  if np.sum(np.ravel(mask)) > 0:
       test_statistic = test_statistic*mask
       
   if below:
