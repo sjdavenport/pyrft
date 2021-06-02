@@ -31,7 +31,7 @@ pr.find_clusters(np.array([[1,0,1],[1,1,0]]), 0.5, below = 1)
   if below:
      clusters = measure.label(test_statistic < CDT, connectivity = connectivity)
   else:
-     clusters = measure.label(test_statistic < CDT, connectivity = connectivity)
+     clusters = measure.label(test_statistic > CDT, connectivity = connectivity)
   
   return clusters
   
