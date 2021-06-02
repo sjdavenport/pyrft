@@ -19,9 +19,9 @@ def find_clusters(test_statistic, CDT, below = bool(0), mask = math.nan, connect
   Examples
   ---------------------
 # Clusters above 0.5
-pr.find_clusters(np.array([[1,0,1],[1,1,0]]), 0.5)
+cluster_image, cluster_sizes = pr.find_clusters(np.array([[1,0,1],[1,1,0]]), 0.5)
 # Clusters below 0.5
-pr.find_clusters(np.array([[1,0,1],[1,1,0]]), 0.5, below = 1)
+cluster_image, cluster_sizes = pr.find_clusters(np.array([[1,0,1],[1,1,0]]), 0.5, below = 1)
   """
   
   # Mask the data if that is possible
@@ -32,9 +32,15 @@ pr.find_clusters(np.array([[1,0,1],[1,1,0]]), 0.5, below = 1)
       raise Exception("two sample hasn't been implemented yet!")
       
   if below:
-     clusters = measure.label((test_statistic < CDT)*(test_statistic > 0), connectivity = connectivity)
+     cluster_image = measure.label((test_statistic < CDT)*(test_statistic > 0), connectivity = connectivity)
   else:
-     clusters = measure.label(test_statistic > CDT, connectivity = connectivity)
+     cluster_image = measure.label(test_statistic > CDT, connectivity = connectivity)
   
-  return clusters
+  n_clusters = np.max(cluster_image)
+  cluster_sizes = np.zeros(n_clusters)
+  
+  for I in np.arange(n_clusters):
+      cluster_sizes[I] = np.sum(cluster_image == (I+1))
+      
+  return cluster_image, cluster_sizes
   
