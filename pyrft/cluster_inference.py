@@ -3,7 +3,7 @@ import pyrft as pr
 import math
 from skimage import measure
 
-def find_clusters(test_statistic, CDT, two_sample = bool(0), below = bool(0), mask = math.nan, connectivity = 1):
+def find_clusters(test_statistic, CDT, below = bool(0), mask = math.nan, connectivity = 1, two_sample = bool(0)):
   """ find_clusters
   Parameters  
   ---------------------
@@ -28,8 +28,11 @@ pr.find_clusters(np.array([[1,0,1],[1,1,0]]), 0.5, below = 1)
   if np.sum(np.ravel(mask)) > 0:
       test_statistic = test_statistic*mask
       
+  if two_sample:
+      raise Exception("two sample hasn't been implemented yet!")
+      
   if below:
-     clusters = measure.label(test_statistic < CDT, connectivity = connectivity)
+     clusters = measure.label((test_statistic < CDT)*(test_statistic > 0), connectivity = connectivity)
   else:
      clusters = measure.label(test_statistic > CDT, connectivity = connectivity)
   

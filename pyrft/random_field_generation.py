@@ -6,6 +6,50 @@ import pyrft as pr
 from scipy.ndimage import gaussian_filter
 
 
+def smooth(data, FWHM, mask = 0):
+  """ smooth
+    
+  Parameters  
+  ---------------------
+  data    an object of class field
+  FWHM    
+  mask   a numpy.nd array,
+          with the same dimensions as the data
+
+  Returns
+  ---------------------
+  An object of class field with 
+  
+  Examples
+  ---------------------
+# 2D example
+f = pr.wfield((50,50), 10)
+smooth_f = pr.smooth(f, 8)
+plt.imshow(smooth_f.field[:,:,1])
+
+# 2D example with mask
+f = pr.wfield((50,50), 10)
+mask = np.zeros((50,50), dtype = 'bool')
+mask[15:35,15:35] = 1
+smooth_f = pr.smooth(f, 8, mask)
+plt.imshow(smooth_f.field[:,:,1])
+  """
+  # Convert a numpy array to a field if necessary
+  if type(data) == np.ndarray:
+        data = pr.makefield(data)
+  
+  # If a non-zero mask is supplied used this instead of the mask associated with data
+  if np.sum(np.ravel(mask)) > 0:
+      data.mask = mask
+  
+  # Calculate the standard deviation from the FWHM
+  sigma = pr.FWHM2sigma(FWHM)  
+
+  for I in np.arange(data.fibersize):
+    data.field[...,I] = gaussian_filter(data.field[...,I]*data.mask, sigma = sigma)*data.mask
+
+  return data
+
 def statnoise(mask, nsubj, FWHM):
   """ statnoise constructs a an object of class Field with specified mask
   and fibersize and consisting of stationary noise (arising from white noise
