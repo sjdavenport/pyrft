@@ -44,13 +44,18 @@ plt.imshow(cluster_image)
   n_clusters = np.max(cluster_image)
   store_cluster_sizes = np.zeros(1)
   
+  # Use J to keep track of the clusters
+  J = 0
+  
   for I in np.arange(n_clusters):
       cluster_index = (cluster_image == (I+1))
       cluster_size = np.sum(cluster_index)
       if cluster_size < minCsize:
           cluster_image[cluster_index] = 0
       else:
+          J = J + 1
           store_cluster_sizes = np.append(store_cluster_sizes, cluster_size)
+          cluster_image[cluster_index] = J
           
   # Remove the initial zero
   store_cluster_sizes = store_cluster_sizes[1:]
