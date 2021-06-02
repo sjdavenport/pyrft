@@ -53,7 +53,7 @@ def mvtstat(data):
   cohensd = xbar/std_dev
   tstat = np.sqrt(nsubj)*cohensd
   
-  return(tstat, xbar, std_dev)
+  return tstat, xbar, std_dev
 
 def contrast_tstats(lat_data, X, C, check_error = 1):
     """ A function to compute the voxelwise t-statistics for a set of contrasts

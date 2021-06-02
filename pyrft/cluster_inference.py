@@ -3,7 +3,7 @@ import pyrft as pr
 import math
 from skimage import measure
 
-def find_clusters(test_statistic, CDT, below = bool(0), mask = math.nan, connectivity = 1, two_sample = bool(0)):
+def find_clusters(test_statistic, CDT, below = bool(0), mask = math.nan, connectivity = 1, two_sample = bool(0), minCsize = 1):
   """ find_clusters
   Parameters  
   ---------------------
@@ -22,6 +22,11 @@ def find_clusters(test_statistic, CDT, below = bool(0), mask = math.nan, connect
 cluster_image, cluster_sizes = pr.find_clusters(np.array([[1,0,1],[1,1,0]]), 0.5)
 # Clusters below 0.5
 cluster_image, cluster_sizes = pr.find_clusters(np.array([[1,0,1],[1,1,0]]), 0.5, below = 1)
+# tstat image
+f = pr.statnoise((50,50), 20, 10)
+tstat, xbar, std_dev = pr.mvtstat(f.field)
+cluster_image, c_sizes = pr.find_clusters(tstat, 2)
+plt.imshow(cluster_image)
   """
   
   # Mask the data if that is possible
@@ -37,10 +42,18 @@ cluster_image, cluster_sizes = pr.find_clusters(np.array([[1,0,1],[1,1,0]]), 0.5
      cluster_image = measure.label(test_statistic > CDT, connectivity = connectivity)
   
   n_clusters = np.max(cluster_image)
-  cluster_sizes = np.zeros(n_clusters)
+  store_cluster_sizes = np.zeros(1)
   
   for I in np.arange(n_clusters):
-      cluster_sizes[I] = np.sum(cluster_image == (I+1))
-      
-  return cluster_image, cluster_sizes
+      cluster_index = (cluster_image == (I+1))
+      cluster_size = np.sum(cluster_index)
+      if cluster_size < minCsize:
+          cluster_image[cluster_index] = 0
+      else:
+          store_cluster_sizes = np.append(store_cluster_sizes, cluster_size)
+          
+  # Remove the initial zero
+  store_cluster_sizes = store_cluster_sizes[1:]
+  
+  return cluster_image, store_cluster_sizes
   
