@@ -1,13 +1,12 @@
 """
 Functions to run permutation methods
 """
-import sanssouci as ss
 import pyrft as pr
 import numpy as np
 from sklearn.utils import check_random_state
 from scipy.stats import t
 
-def boot_contrasts(lat_data, X, C, B = 1000, template = 'linear', replace = True, store_boots = 0):
+def boot_contrasts(lat_data, X, C, B = 1000, template = 'linear', replace = True, store_boots = 0, display_progress = 0):
     """ A function to compute the voxelwise t-statistics for a set of contrasts
       and their (two-sided) p-value by bootstrapping the residuals
   
@@ -121,6 +120,9 @@ minP, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, X, C)
     # for each bootstrap!
     lat_data_perm = lat_data
     for b in np.arange(B - 1):
+        if display_progress:
+            pr.modul(b, 1)
+            
         shuffle_idx = rng.choice(N, N, replace = replace)
         lat_data_perm.field = residuals[...,shuffle_idx]
         permuted_tstats, perm_residuals = pr.constrast_tstats_noerrorchecking(lat_data_perm, X, C)
