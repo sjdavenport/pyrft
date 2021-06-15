@@ -158,7 +158,7 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
         # Obtain the number of clusters
         n_clusters = len(cluster_sizes)
         
-        for I in np.arange(n_clusters[L]):
+        for I in np.arange(n_clusters):
             # Obtain the logical entries for where each region is
             region_idx = cluster_im[...,L] == (I+1)
         
