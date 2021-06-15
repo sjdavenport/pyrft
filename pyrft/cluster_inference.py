@@ -130,7 +130,7 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
 
     ### Perform Post-hoc inference
     # Run the bootstrapped algorithm
-    _, _, pivotal_stats, _ = pr.boot_contrasts(data, design, contrast_matrix, n_bootstraps)
+    _, _, pivotal_stats, _ = pr.boot_contrasts(data, design, contrast_matrix, n_bootstraps = n_bootstraps, display_progress = 1)
 
     # Obtain the lambda calibration
     lambda_quant = np.quantile(pivotal_stats, alpha)
