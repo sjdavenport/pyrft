@@ -164,6 +164,8 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
         
             # Compute the TP bound
             bound = sa.max_fp(pvalues_3d[region_idx], thr)
+            print(region_idx.shape)
+            print(tdp_bounds[region_idx, L].shape)
             tdp_bounds[region_idx, L] = (np.sum(region_idx) - bound)/np.sum(region_idx)
 
     return tdp_bounds
