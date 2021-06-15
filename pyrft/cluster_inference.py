@@ -160,7 +160,7 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
         
         for I in np.arange(n_clusters):
             # Obtain the logical entries for where each region is
-            region_idx = cluster_im[...,L] == (I+1)
+            region_idx = cluster_im == (I+1)
         
             # Compute the TP bound
             bound = sa.max_fp(pvalues_3d[region_idx], thr)
