@@ -110,6 +110,10 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
     masker = NiftiMasker(smoothing_fwhm = fwhm,mask_img = mask, memory='/storage/store2/work/sdavenpo/').fit()
     data = masker.transform(imgs).transpose()
 
+    # Convert the data to a field
+    data = pr.makefield(data)
+
+
     # Obtain the number of subjects
     nsubj = data.fibersize
 
@@ -119,9 +123,6 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
 
     # Load the mask
     mask = load_img(mask).get_fdata()
-
-    # Convert the data to a field
-    data = pr.makefield(data)
 
     # Obtain a 3D brain image of the p-values for obtaining clusters
     #(squeezing to remove the trailing dimension)
