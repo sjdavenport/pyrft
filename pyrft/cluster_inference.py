@@ -142,11 +142,10 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
     thr = sa.t_linear(lambda_quant, np.arange(1,n_vox_in_mask+1), n_vox_in_mask)
 
     ### Calculate the TDP within each cluster
-    if n_contrasts > 1:
-        tdp_bounds = np.zeros(pvalues_3d.shape + (n_contrasts,))
-    else:
-        tdp_bounds = np.zeros(pvalues_3d.shape)
-
+    
+    # Initialize the matrix to store the tdp
+    tdp_bounds = np.zeros(pvalues_3d.shape)
+        
     # Convert the mask to logical
     mask = mask > 0
 
