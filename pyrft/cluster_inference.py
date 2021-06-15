@@ -80,7 +80,7 @@ plt.imshow(cluster_image)
 
     return cluster_image, store_cluster_sizes
 
-def cluster_tdp_brain(imgs, design, contrast_matrix, save_loc, mask, n_bootstraps = 100, fwhm = 4, alpha = 0.1, min_cluster_size = 30, cdt = 0.001):
+def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, fwhm = 4, alpha = 0.1, min_cluster_size = 30, cdt = 0.001):
     """ cluster_tdp_brain calculates the TDP (true discovery proportion) within
     clusters of the test-statistic. This is specifically for brain images
     and enables plotting of these images using the nilearn toolbox
