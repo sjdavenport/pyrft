@@ -1,5 +1,5 @@
 """
-Functions to run cluster inference
+Functions to run cluster inference - test
 """
 import math
 import numpy as np
