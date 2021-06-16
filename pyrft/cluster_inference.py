@@ -80,7 +80,7 @@ plt.imshow(cluster_image)
 
     return cluster_image, store_cluster_sizes
 
-def cluster_tdp_brain(imgs, design, contrast_matrix, mask, save_dir, n_bootstraps = 100, fwhm = 4, alpha = 0.1, min_cluster_size = 30, cdt = 0.001):
+def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, fwhm = 4, alpha = 0.1, min_cluster_size = 30, cdt = 0.001):
     """ cluster_tdp_brain calculates the TDP (true discovery proportion) within
     clusters of the test-statistic. This is specifically for brain images
     and enables plotting of these images using the nilearn toolbox
@@ -167,13 +167,4 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, save_dir, n_bootstrap
             print(tdp_bounds[region_idx, L].shape)
             tdp_bounds[region_idx, L] = (np.sum(region_idx) - bound)/np.sum(region_idx)
 
-    for L in np.arange(n_contrasts):
-        tdp_bounds_nifti = masker.inverse_transform(tdp_bounds[mask, L])
-        plotting.plot_stat_map(
-            tdp_bounds_nifti,
-            display_mode='z', vmax=1, colorbar=True,
-            title='Lower bounds on TDP', cut_coords = 30)
-
-        plt.savefig(save_dir + 'TDP_' + str(L) + '.pdf')
-
-    return tdp_bounds, pivotal_stats, thr
+    return tdp_bounds, masker
