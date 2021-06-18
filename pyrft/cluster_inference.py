@@ -6,8 +6,6 @@ import numpy as np
 from skimage import measure
 from nilearn.image import get_data, load_img
 from nilearn.input_data import NiftiMasker
-from nilearn import plotting
-import matplotlib.pyplot as plt
 from scipy.stats import t
 import sanssouci as sa
 import pyrft as pr
@@ -112,7 +110,6 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
 
     # Convert the data to a field
     data = pr.makefield(data)
-
 
     # Obtain the number of subjects
     nsubj = data.fibersize
