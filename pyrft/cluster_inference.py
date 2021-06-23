@@ -113,6 +113,9 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
 
     # Obtain the number of subjects
     nsubj = data.fibersize
+    
+    if not len(imgs) == nsubj:
+        raise Exception("The number of subjects in imgs doesn't match the number within the data")
 
     # Obtain the test statistics and convert to p-values
     test_stats, _ = pr.contrast_tstats(data, design, contrast_matrix)

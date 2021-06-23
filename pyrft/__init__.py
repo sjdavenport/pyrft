@@ -4,6 +4,7 @@ from .stats_and_aux_functions import *
 from .permutation import *
 from .ss_extras import *
 from .cluster_inference import *
+from .fdr import *
 
 
 __all__ = [
