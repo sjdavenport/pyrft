@@ -5,6 +5,7 @@ A file contain statistics functions
 # Import statements
 import numpy as np
 import pyrft as pr
+from scipy.stats import t
 
 def mvtstat(data):
     """ A function to compute the multivariate t-statistic
@@ -82,20 +83,21 @@ def contrast_tstats(lat_data, design, contrast_matrix, check_error = 1):
   Examples
   -----------------
   # One Sample tstat
-  Dim = (3,3); N = 30; categ = np.zeros(N)
-  X = groupX(categ); C = np.array(1); lat_data = pr.wfield(Dim,N)
-  tstat, residuals = contrast_tstats(lat_data, X, C)
+Dim = (3,3); N = 30; categ = np.zeros(N)
+X = pr.group_design(categ); C = np.array(1); lat_data = pr.wfield(Dim,N)
+tstat, residuals = pr.contrast_tstats(lat_data, X, C)
+
   # Compare to mvtstat:
   print(tstat.field.reshape(lat_data.masksize)); print(mvtstat(lat_data.field)[0])
 
   # Two Sample tstat
   Dim = (10,10); N = 30; categ = np.random.binomial(1, 0.4, size = N)
-  X = groupX(categ); C = np.array((1,-1)); lat_data = pr.wfield(Dim,N)
+  X = group_design(categ); C = np.array((1,-1)); lat_data = pr.wfield(Dim,N)
   tstats = contrast_tstats(lat_data, X, C)
 
   # 3 Sample tstat (lol)
   Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
-  X = groupX(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
+  X = group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
   tstats = contrast_tstats(lat_data, X, C)
     """
     # Error check the inputs
@@ -174,19 +176,19 @@ def constrast_tstats_noerrorchecking(lat_data, design, contrast_matrix):
   -----------------
   # One Sample tstat
   Dim = (3,3); N = 30; categ = np.zeros(N)
-  X = groupX(categ); C = np.array([[1]]); lat_data = pr.wfield(Dim,N)
+  X = group_design(categ); C = np.array([[1]]); lat_data = pr.wfield(Dim,N)
   tstat = constrast_tstats_noerrorchecking(lat_data, X, C)
   # Compare to mvtstat:
   print(tstat.field.reshape(lat_data.masksize)); print(mvtstat(lat_data.field)[0])
 
   # Two Sample tstat
   Dim = (10,10); N = 30; categ = np.random.binomial(1, 0.4, size = N)
-  X = groupX(categ); C = np.array([[1,-1]]); lat_data = pr.wfield(Dim,N)
+  X = group_design(categ); C = np.array([[1,-1]]); lat_data = pr.wfield(Dim,N)
   tstats = constrast_tstats_noerrorchecking(lat_data, X, C)
 
   # 3 Sample tstat (lol)
   Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
-  X = groupX(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
+  X = group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
   tstats = constrast_tstats_noerrorchecking(lat_data, X, C)
     """
     # Calculate the number of contrasts
@@ -317,3 +319,30 @@ def modul(iterand, niterand = 100):
     if iterand % niterand == 0:
         print(iterand)
     
+def tstat2pval( tstats, df, one_sample = 0 ):
+    """ A function converts the test-statistics to pvalues
+
+  Parameters
+  ------------------
+  tstats
+  df:   int,
+      the degrees of freedom of the t-statistic
+  one_sample
+
+  Returns
+  ------------------
+  pvalues: 
+
+
+  Examples
+  ------------------
+zvals = np.random.randn(1, 10000)
+pvals = tstat2pval( zvals[0], 1000, one_sample = 0 )
+plt.hist(pvals)
+    """
+    if one_sample == 0:
+        pvalues = 2*(1 - t.cdf(abs(tstats), df))
+    else:
+        pvalues = 1 - t.cdf(tstats, df)
+        
+    return pvalues
