@@ -50,19 +50,19 @@ def _compute_hommel_value(pvalues, alpha = 0.1):
     """ This function computes the hommel value needed for all resolution 
     inference
 
-  Parameters
-  ---------------------
-  pvalues:      a numpy.nd array,
-      containing the pvalues
-  alpha:        float,    
-      the significance level, default is 0.1
+    Parameters
+    ---------------------
+    pvalues:      a numpy.nd array,
+        containing the pvalues
+    alpha:        float,    
+        the significance level, default is 0.1
 
-  Returns
-  ---------------------
-  hommel_value: the value from implementing the hommel procedure
+    Returns
+    ---------------------
+    hommel_value: the value from implementing the hommel procedure
 
-  Examples
-  ---------------------
+    Examples
+    ---------------------
 zvals = np.random.randn(1, 100)
 zvals = zvals[0]
 pvals = norm.sf(zvals)
