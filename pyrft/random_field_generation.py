@@ -145,7 +145,8 @@ def wfield(mask, fibersize, field_type = 'N', field_params = 3):
   Examples
   ---------------------
 exF = pr.wfield(15, 10); print(exF)
-exF = pr.wfield((5,5), 10); print(exF)
+exF = pr.wfield((5,5), 10)
+
 
   Notes
   ---------------------
