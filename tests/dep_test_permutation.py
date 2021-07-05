@@ -15,7 +15,9 @@ data_store = pyrft_loc + 'tests2/test_data/'
 
 def test_boot_contrasts():
     np.random.seed(10)
-    Dim = 5; N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
+    dim = 5
+    n = 30
+    categ = np.random.multinomial(2, [1 / 3, 1 / 3, 1 / 3], size=n)[:,1]
     X = pr.groupX(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
     minP, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, X, C)
     
