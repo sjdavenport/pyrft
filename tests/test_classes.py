@@ -20,7 +20,8 @@ def test_Field():
     
     # 2D Field
     nsubj = 30
-    dim = (100,100)
+    dim = (100, 100)
+
     fsize = dim + (nsubj,)
     field = np.random.randn(*fsize)
     mask = np.ones(dim, dtype = bool)
