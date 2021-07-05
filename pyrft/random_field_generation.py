@@ -144,8 +144,8 @@ def wfield(mask, fibersize, field_type = 'N', field_params = 3):
 
   Examples
   ---------------------
-exF = pr.wfield(15, 10); print(exF)
-exF = pr.wfield((5,5), 10)
+example_field = pr.wfield(15, 10); print(example_field)
+example_field = pr.wfield((5,5), 10)
 
 
   Notes
@@ -154,7 +154,7 @@ exF = pr.wfield((5,5), 10)
   as (10,1) for example! And under masks e.g.
     example_field = pr.wfield(np.array((0, 1, 1, 1, 0, 1, 1), dtype = 'bool'), 10)
 
-exF = pr.wfield(np.array((0,1,1,1,0,1,1), dtype = 'bool'), 10)
+example_field = pr.wfield(np.array((0,1,1,1,0,1,1), dtype = 'bool'), 10)
     """
 
     # Set the default dimension not to be 1D
