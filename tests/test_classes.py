@@ -50,7 +50,8 @@ def test_Field():
 def test_makefield():
     nvox = 100
     nsubj = 30
-    data = np.random.randn(nvox,nsubj)
+    data = np.random.randn(nvox, nsubj)
+
     f = pr.makefield(data)
     assert isinstance(f, pr.classes.Field)
     
