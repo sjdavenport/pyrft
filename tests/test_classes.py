@@ -12,14 +12,14 @@ def test_Field():
     field = np.random.randn(nvox,nsubj)
     mask = np.ones((nvox,1), dtype = bool)
     f = pr.Field(field, mask)
-    
+
     assert isinstance(f, pr.classes.Field)
     assert f.fieldsize == (nvox, nsubj)
     assert f.D == 1
     assert f.masksize == (1, nvox)
     assert f.fibersize == nsubj
     assert f.field.shape == f.fieldsize
-    
+
     # 2D Field
     nsubj = 30
     dim = (100, 100)
@@ -28,27 +28,27 @@ def test_Field():
     field = np.random.randn(*fsize)
     mask = np.ones(dim, dtype = bool)
     f = pr.Field(field, mask)
-    
+
     assert isinstance(f, pr.classes.Field)
     assert f.fieldsize == dim + (nsubj,)
     assert f.D == len(dim)
     assert f.masksize == dim
     assert f.fibersize == nsubj
     assert f.field.shape == f.fieldsize
-    
+
     # 2D field with a single fiber
     dim = (100,100)
     field = np.random.randn(*dim)
     mask = np.ones(dim, dtype = bool)
     f = pr.Field(field, mask)
-    
+
     assert isinstance(f, pr.classes.Field)
     assert f.fieldsize == dim
     assert f.D == len(dim)
     assert f.masksize == dim
     assert f.fibersize == 1
     assert f.field.shape == f.fieldsize
-    
+
 def test_makefield():
     """ Testing the makefield function """
     nvox = 100
@@ -57,7 +57,7 @@ def test_makefield():
 
     f = pr.makefield(data)
     assert isinstance(f, pr.classes.Field)
-    
+
     assert f.fieldsize == (nvox, nsubj)
     assert f.D == 1
     assert f.masksize == (1, nvox)

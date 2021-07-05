@@ -15,11 +15,11 @@ def test_smooth():
         fwhm = 8
         f = pr.wfield(dim, 10)
         smooth_f = pr.smooth(f, fwhm)
-        
+
         assert isinstance(smooth_f, pr.classes.Field)
         assert smooth_f.D == D
         assert smooth_f.fieldsize == dim + (nsubj,)
-    
+
 def test_wfield():
     """ Testing the wfield function """
     nsubj = 10;
@@ -30,7 +30,7 @@ def test_wfield():
         else:
             dim = (5,5)
             D = 2
-            
+
         f = pr.wfield(dim, nsubj)
         assert isinstance(f, pr.classes.Field)
 
@@ -40,7 +40,7 @@ def test_wfield():
         else:
             assert f.fieldsize == dim + (nsubj,)
 
-    
+
 def test_statnoise():
     """ Testing the statnoise function """
     nsubj = 10;
@@ -51,7 +51,7 @@ def test_statnoise():
         else:
             dim = (5,5)
             D = 2
-            
+
         fwhm = 4
         f = pr.statnoise(dim, nsubj, fwhm)
         assert isinstance(f, pr.classes.Field)

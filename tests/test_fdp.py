@@ -14,11 +14,10 @@ def test_fdr_bh():
     normal_rvs[0:20] = normal_rvs[0:20] + 2
     pvalues = 1 - norm.cdf(normal_rvs)
     rejection_ind, n_rejections, sig_locs = pr.fdr_bh(pvalues)
-    
+
     assert isinstance(rejection_ind, np.ndarray)
     assert isinstance(sig_locs, np.ndarray)
 
     assert rejection_ind.shape == (nvals,)
     assert isinstance(n_rejections, np.intc)
     assert sig_locs.shape == (n_rejections,)
-    

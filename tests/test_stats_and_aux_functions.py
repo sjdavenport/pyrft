@@ -24,8 +24,8 @@ def test_mvtstat():
 
 def test_contrast_tstats():
     """ Testing the contrast_tstats function """
-    # Note that the function always runs contrast_error_checking and 
-    # constrast_tstats_noerrorchecking, so these functions are automatically tested 
+    # Note that the function always runs contrast_error_checking and
+    # constrast_tstats_noerrorchecking, so these functions are automatically tested
     # via running it
     # Need to include a 1D example
     nsubj = 30
@@ -51,16 +51,16 @@ def test_contrast_tstats():
     if len(C.shape) < 2:
         C = np.array([C])
     assert tstat.fieldsize == dim + (C.shape[0],)
-    
+
     assert isinstance(residuals, np.ndarray)
     assert residuals.shape == dim + (nsubj,)
-    
+
 def test_fwhm2sigma():
     """ Testing the fwhm2sigma function """
-    FWHM = 3 
+    FWHM = 3
     sigma = pr.fwhm2sigma(FWHM)
     assert sigma > 0
-    
+
 def test_group_design():
     """ Testing the group_design function """
     for i in np.arange(2):
@@ -68,20 +68,20 @@ def test_group_design():
             categ = (0,1,1,0)
         elif i == 1:
             categ = (0,1,1,2,2)
-        
+
         X = pr.group_design(categ)
-    
+
         assert X.shape[0] == len(categ)
         assert X.shape[1] == len(np.unique(categ))
         assert np.sum(np.ravel(X)) == len(categ)
-        
+
 def test_tstat2pval():
     """ Testing the tstat2pval function """
     assert pr.tstat2pval(0, 10, one_sample = 0) == 1.0
     assert pr.tstat2pval(0, 10, one_sample = 1) == 0.5
-    
+
     assert pr.tstat2pval(1.97, 1000) < 0.05
     assert pr.tstat2pval(1.96, 1000) > 0.05
-    
+
     assert pr.tstat2pval(1.97, 1000, 1) < 0.025
     assert pr.tstat2pval(1.96, 1000, 1) > 0.025
