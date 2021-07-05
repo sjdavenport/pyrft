@@ -21,6 +21,11 @@ def smooth(data, fwhm, mask = 0):
 
   Examples
   ---------------------
+# 1D example
+f = pr.wfield(50,10)
+smooth_f = pr.smooth(f, 8)
+plt.plot(smooth_f.field)
+  
 # 2D example
 f = pr.wfield((50,50), 10)
 smooth_f = pr.smooth(f, 8)
@@ -139,13 +144,15 @@ def wfield(mask, fibersize, field_type = 'N', field_params = 3):
 
   Examples
   ---------------------
-  exF = pr.wfield(1, 10)
-  exF = pr.wfield((5,5), 10)
+exF = pr.wfield(15, 10); print(exF)
+exF = pr.wfield((5,5), 10); print(exF)
 
   Notes
   ---------------------
   Need to ensure that this function works in all settings, i.e. 1D masks specified
-  as (10,1) for example!
+  as (10,1) for example! And under masks e.g.
+exF = pr.wfield(np.array((0,1,1,1,0,1,1), dtype = 'bool'), 10)
+exF = pr.wfield(np.array((0,1,1,1,0,1,1), dtype = 'bool'), 10)
     """
 
     # Set the default dimension not to be 1D
