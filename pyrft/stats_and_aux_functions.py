@@ -292,8 +292,8 @@ def group_design(categ):
     design = np.zeros((nsubj,n_params))
 
     # Set the elements of the design matrix by assigning each subject a category
-    for I in np.arange(nsubj):
-        design[I, int(categ[I])] = 1 # change so you do this all at once if possible!
+    for i in np.arange(nsubj):
+        design[i, int(categ[i])] = 1 # change so you do this all at once if possible!
 
     return design
 

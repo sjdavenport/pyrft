@@ -225,9 +225,9 @@ FWER_FPR, JER_FPR = pr.bootFPR(dim, nsubj, C)
         n_contrasts = contrast_matrix.shape[1]
 
     # Calculate the FPR
-    for I in np.arange(niters):
+    for i in np.arange(niters):
         # Keep track of the progress.
-        pr.modul(I,100)
+        pr.modul(i,100)
 
         # Generate the data (i.e. generate stationary random fields)
         lat_data = pr.statnoise(dim,nsubj,fwhm)

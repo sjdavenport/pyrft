@@ -6,10 +6,10 @@ import numpy as np
 import pyrft as pr
 
 def test_mvtstat():
-    for I in np.arange(2):
-        if I == 0:
+    for i in np.arange(2):
+        if i == 0:
             dim = (50,)
-        elif I == 1:
+        elif i == 1:
             dim = (50,50)
 
         nsubj = 20
@@ -28,14 +28,14 @@ def test_contrast_tstats():
     # Need to include a 1D example
     nsubj = 30
     dim = (10,10)
-    for I in np.arange(3):
-        if I == 0:
+    for i in np.arange(3):
+        if i == 0:
             categ = np.zeros(nsubj)
             C = np.array(1)
-        elif I == 1:
+        elif i == 1:
             categ = np.random.binomial(1, 0.4, size = nsubj)
             C = np.array((1,-1))
-        elif I == 2:
+        elif i == 2:
             categ = np.random.multinomial(2, [1/3,1/3,1/3], size = nsubj)[:,1]
             C = np.array([[1,-1,0],[0,1,-1]]);
 
@@ -59,10 +59,10 @@ def test_fwhm2sigma():
     assert sigma > 0
     
 def test_group_design():
-    for I in np.arange(2):
-        if I == 0:
+    for i in np.arange(2):
+        if i == 0:
             categ = (0,1,1,0)
-        elif I == 1:
+        elif i == 1:
             categ = (0,1,1,2,2)
         
         X = pr.group_design(categ)

@@ -61,17 +61,17 @@ plt.imshow(cluster_image)
     store_cluster_sizes = np.zeros(1)
 
     # Use J to keep track of the clusters
-    J = 0
+    j = 0
 
-    for I in np.arange(n_clusters):
-        cluster_index = (cluster_image == (I+1))
+    for i in np.arange(n_clusters):
+        cluster_index = (cluster_image == (i+1))
         cluster_size = np.sum(cluster_index)
         if cluster_size < min_cluster_size:
             cluster_image[cluster_index] = 0
         else:
-            J = J + 1
+            j = j + 1
             store_cluster_sizes = np.append(store_cluster_sizes, cluster_size)
-            cluster_image[cluster_index] = J
+            cluster_image[cluster_index] = j
 
     # Remove the initial zero
     store_cluster_sizes = store_cluster_sizes[1:]
@@ -137,22 +137,22 @@ def cluster_tdp(data, design, contrast_matrix, mask, n_bootstraps = 100, alpha =
     mask = mask > 0
 
     # For each cluster calculate the TDP
-    for L in np.arange(n_contrasts):
+    for l in np.arange(n_contrasts):
         # Get the clusters of the test-statistic
-        cluster_im, cluster_sizes = pr.find_clusters(pvalues[..., L], cdt, below = 1, mask = mask, min_cluster_size = min_cluster_size)
+        cluster_im, cluster_sizes = pr.find_clusters(pvalues[..., l], cdt, below = 1, mask = mask, min_cluster_size = min_cluster_size)
 
         # Obtain the number of clusters
         n_clusters = len(cluster_sizes)
         
-        for I in np.arange(n_clusters):
+        for i in np.arange(n_clusters):
             # Obtain the logical entries for where each region is
-            region_idx = cluster_im == (I+1)
+            region_idx = cluster_im == (i+1)
         
             # Compute the TP bound
-            bound = sa.max_fp(pvalues[region_idx, L], thr)
+            bound = sa.max_fp(pvalues[region_idx, l], thr)
             print(region_idx.shape)
-            print(tdp_bounds[region_idx, L].shape)
-            tdp_bounds[region_idx, L] = (np.sum(region_idx) - bound)/np.sum(region_idx)
+            print(tdp_bounds[region_idx, l].shape)
+            tdp_bounds[region_idx, l] = (np.sum(region_idx) - bound)/np.sum(region_idx)
 
     return tdp_bounds
 
@@ -234,22 +234,22 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
     mask = mask > 0
 
     # For each cluster calculate the TDP
-    for L in np.arange(n_contrasts):
+    for l in np.arange(n_contrasts):
         # Get the clusters of the test-statistic
-        cluster_im, cluster_sizes = pr.find_clusters(pvalues_3d[..., L], cdt, below = 1, mask = mask, min_cluster_size = min_cluster_size)
+        cluster_im, cluster_sizes = pr.find_clusters(pvalues_3d[..., l], cdt, below = 1, mask = mask, min_cluster_size = min_cluster_size)
 
         # Obtain the number of clusters
         n_clusters = len(cluster_sizes)
         
-        for I in np.arange(n_clusters):
+        for i in np.arange(n_clusters):
             # Obtain the logical entries for where each region is
-            region_idx = cluster_im == (I+1)
+            region_idx = cluster_im == (i+1)
         
             # Compute the TP bound
-            bound = sa.max_fp(pvalues_3d[region_idx, L], thr)
+            bound = sa.max_fp(pvalues_3d[region_idx, l], thr)
             print(region_idx.shape)
-            print(tdp_bounds[region_idx, L].shape)
-            tdp_bounds[region_idx, L] = (np.sum(region_idx) - bound)/np.sum(region_idx)
+            print(tdp_bounds[region_idx, l].shape)
+            tdp_bounds[region_idx, l] = (np.sum(region_idx) - bound)/np.sum(region_idx)
 
     return tdp_bounds, masker
 

@@ -7,19 +7,19 @@ import pyrft as pr
 
 def test_boot_contrasts():
     np.random.seed(10)
-    for I in np.arange(2):
-        if I == 1:
+    for i in np.arange(2):
+        if i == 1:
             # 1D example
             dim = 5
         else:
             # 2D example
             dim = (10,10)
 
-    N = 30
-    categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
+    nsubj = 30
+    categ = np.random.multinomial(2, [1/3,1/3,1/3], size = nsubj)[:,1]
     X = pr.group_design(categ)
     C = np.array([[1,-1,0],[0,1,-1]])
-    lat_data = pr.wfield(dim,N)
+    lat_data = pr.wfield(dim,nsubj)
     B = 100;
     minp, orig_pvalues, pivotal_stats, boot_stores = pr.boot_contrasts(lat_data, X, C, B, store_boots = 1)
 
@@ -56,10 +56,10 @@ def test_perm_contrasts():
             # 2D example
             dim = (10,10)
 
-    N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
+    nsubj = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = nsubj)[:,1]
     X = pr.group_design(categ)
     c = np.array([1,-1,0])
-    lat_data = pr.wfield(dim,N)
+    lat_data = pr.wfield(dim,nsubj)
     B = 100;
     minp, orig_pvalues, pivotal_stats = pr.perm_contrasts(lat_data, X, c, B)
 

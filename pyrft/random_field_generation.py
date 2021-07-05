@@ -49,8 +49,8 @@ plt.imshow(smooth_f.field[:,:,1])
     # Calculate the standard deviation from the fwhm
     sigma = pr.fwhm2sigma(fwhm)
 
-    for I in np.arange(data.fibersize):
-        data.field[...,I] = gaussian_filter(data.field[...,I]*data.mask, sigma = sigma)*data.mask
+    for i in np.arange(data.fibersize):
+        data.field[...,i] = gaussian_filter(data.field[...,i]*data.mask, sigma = sigma)*data.mask
 
     return data
 
