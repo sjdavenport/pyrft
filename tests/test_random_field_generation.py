@@ -6,6 +6,7 @@ import numpy as np
 import pyrft as pr
 
 def test_smooth():
+    """ Testing the smooth function """
     nvox = 50
     for i in np.arange(2):
         dim = tuple(np.tile(nvox,i + 2))
@@ -20,6 +21,7 @@ def test_smooth():
         assert smooth_f.fieldsize == dim + (nsubj,)
     
 def test_wfield():
+    """ Testing the wfield function """
     nsubj = 10;
     for i in np.arange(2):
         if i == 0:
@@ -40,6 +42,7 @@ def test_wfield():
 
     
 def test_statnoise():
+    """ Testing the statnoise function """
     nsubj = 10;
     for i in np.arange(2):
         if i == 0:

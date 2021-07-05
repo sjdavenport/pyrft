@@ -88,7 +88,7 @@ X = pr.group_design(categ); C = np.array(1); lat_data = pr.wfield(Dim,N)
 tstat, residuals = pr.contrast_tstats(lat_data, X, C)
 
   # Compare to mvtstat:
-  print(tstat.field.reshape(lat_data.masksize)); print(mvtstat(lat_data.field)[0])
+print(tstat.field.reshape(lat_data.masksize)); print(mvtstat(lat_data.field)[0])
 
   # Two Sample tstat
 Dim = (10,10); N = 30; categ = np.random.binomial(1, 0.4, size = N)
@@ -96,9 +96,9 @@ X = pr.group_design(categ); C = np.array((1,-1)); lat_data = pr.wfield(Dim,N)
 tstats = pr.contrast_tstats(lat_data, X, C)
 
   # 3 Sample tstat (lol)
-  Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
-  X = pr.group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
-  tstats = pr.contrast_tstats(lat_data, X, C)
+Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
+X = pr.group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
+tstats = pr.contrast_tstats(lat_data, X, C)
     """
     # Error check the inputs
     if check_error == 1:

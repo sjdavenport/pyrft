@@ -152,9 +152,7 @@ example_field = pr.wfield((5,5), 10)
   ---------------------
   Need to ensure that this function works in all settings, i.e. 1D masks specified
   as (10,1) for example! And under masks e.g.
-    example_field = pr.wfield(np.array((0, 1, 1, 1, 0, 1, 1), dtype = 'bool'), 10)
-
-example_field = pr.wfield(np.array((0,1,1,1,0,1,1), dtype = 'bool'), 10)
+example_field = pr.wfield(np.array((0, 1, 1, 1, 0, 1, 1), dtype = 'bool'), 10)
     """
 
     # Set the default dimension not to be 1D

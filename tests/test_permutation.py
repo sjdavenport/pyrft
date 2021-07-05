@@ -6,6 +6,7 @@ import numpy as np
 import pyrft as pr
 
 def test_boot_contrasts():
+    """ Testing the boot_contrasts function """
     np.random.seed(10)
     for i in np.arange(2):
         if i == 1:
@@ -47,6 +48,7 @@ def test_boot_contrasts():
 # boot_fpr takes too long to run in order to test it
 
 def test_perm_contrasts():
+    """ Testing the perm_contrasts function """
     np.random.seed(10)
     for I in np.arange(2):
         if I == 1:

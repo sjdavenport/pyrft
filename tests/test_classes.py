@@ -3,7 +3,9 @@ Testing the functions in the classes.py file
 """
 import numpy as np
 import pyrft as pr
+
 def test_Field():
+    """ Testing the Field class """
     # 1D Field
     nsubj = 30
     nvox = 100
@@ -48,6 +50,7 @@ def test_Field():
     assert f.field.shape == f.fieldsize
     
 def test_makefield():
+    """ Testing the makefield function """
     nvox = 100
     nsubj = 30
     data = np.random.randn(nvox, nsubj)

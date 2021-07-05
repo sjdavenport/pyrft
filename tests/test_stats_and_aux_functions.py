@@ -6,6 +6,7 @@ import numpy as np
 import pyrft as pr
 
 def test_mvtstat():
+    """ Testing the mvtstat function """
     for i in np.arange(2):
         if i == 0:
             dim = (50,)
@@ -22,6 +23,7 @@ def test_mvtstat():
         assert np.sum(std_dev > 0) == np.prod(dim)
 
 def test_contrast_tstats():
+    """ Testing the contrast_tstats function """
     # Note that the function always runs contrast_error_checking and 
     # constrast_tstats_noerrorchecking, so these functions are automatically tested 
     # via running it
@@ -54,11 +56,13 @@ def test_contrast_tstats():
     assert residuals.shape == dim + (nsubj,)
     
 def test_fwhm2sigma():
+    """ Testing the fwhm2sigma function """
     FWHM = 3 
     sigma = pr.fwhm2sigma(FWHM)
     assert sigma > 0
     
 def test_group_design():
+    """ Testing the group_design function """
     for i in np.arange(2):
         if i == 0:
             categ = (0,1,1,0)
@@ -72,6 +76,7 @@ def test_group_design():
         assert np.sum(np.ravel(X)) == len(categ)
         
 def test_tstat2pval():
+    """ Testing the tstat2pval function """
     assert pr.tstat2pval(0, 10, one_sample = 0) == 1.0
     assert pr.tstat2pval(0, 10, one_sample = 1) == 0.5
     

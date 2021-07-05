@@ -6,6 +6,7 @@ import numpy as np
 import pyrft as pr
 
 def test_find_clusters():
+    """ Testing the find_clusters function """
     data = np.array([[1,0,1],[1,1,0]])
     threshold = 0.5
     for below in np.arange(1):

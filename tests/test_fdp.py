@@ -7,6 +7,7 @@ import pyrft as pr
 from scipy.stats import norm
 
 def test_fdr_bh():
+    """ Testing the fdr_bh function """
     np.random.seed(10)
     nvals = 100
     normal_rvs = np.random.randn(1,100)[0]
