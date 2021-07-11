@@ -24,7 +24,8 @@ def test_boot_contrasts():
         C = np.array([[1,-1,0],[0,1,-1]])
         lat_data = pr.wfield(dim,nsubj)
         B = 100;
-        minp, orig_pvalues, pivotal_stats, boot_stores = pr.boot_contrasts(lat_data, X, C, B, store_boots = 1)
+        minp, orig_pvalues, pivotal_stats, boot_stores = \
+            pr.boot_contrasts(lat_data, X, C, B, store_boots = 1)
 
         # Testing minp
         assert minp.min() > 0
@@ -64,7 +65,8 @@ def test_perm_contrasts():
             # 2D example
             dim = (10,10)
 
-    nsubj = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = nsubj)[:,1]
+    nsubj = 30
+    categ = np.random.multinomial(2, [1/3,1/3,1/3], size = nsubj)[:,1]
     X = pr.group_design(categ)
     c = np.array([1,-1,0])
     lat_data = pr.wfield(dim,nsubj)
