@@ -25,7 +25,7 @@ def smooth(data, fwhm, mask = 0):
 f = pr.wfield(50,10)
 smooth_f = pr.smooth(f, 8)
 plt.plot(smooth_f.field)
-  
+
 # 2D example
 f = pr.wfield((50,50), 10)
 smooth_f = pr.smooth(f, 8)
