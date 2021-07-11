@@ -236,7 +236,8 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
     # For each cluster calculate the TDP
     for l in np.arange(n_contrasts):
         # Get the clusters of the test-statistic
-        cluster_im, cluster_sizes = pr.find_clusters(pvalues_3d[..., l], cdt, below = 1, mask = mask, min_cluster_size = min_cluster_size)
+        cluster_im, cluster_sizes = pr.find_clusters(pvalues_3d[..., l], cdt, \
+                   below = 1, mask = mask, min_cluster_size = min_cluster_size)
 
         # Obtain the number of clusters
         n_clusters = len(cluster_sizes)
