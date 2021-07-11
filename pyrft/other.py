@@ -51,14 +51,14 @@ def _compute_hommel_value(pvalues, alpha = 0.1):
     inference
 
     Parameters
-    ---------------------
+    ----------
     pvalues:      a numpy.nd array,
         containing the pvalues
     alpha:        float,    
         the significance level, default is 0.1
 
     Returns
-    ---------------------
+    ----------
     hommel_value: the value from implementing the hommel procedure
 
     Examples
