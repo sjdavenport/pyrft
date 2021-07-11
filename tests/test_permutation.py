@@ -70,7 +70,7 @@ def test_perm_contrasts():
     X = pr.group_design(categ)
     c = np.array([1,-1,0])
     lat_data = pr.wfield(dim,nsubj)
-    B = 100;
+    B = 100
     minp, orig_pvalues, pivotal_stats = pr.perm_contrasts(lat_data, X, c, B)
 
     # Testing minp

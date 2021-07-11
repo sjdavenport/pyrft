@@ -11,7 +11,8 @@ import sanssouci as sa
 import pyrft as pr
 
 
-def find_clusters(test_statistic, cdt, below = bool(0), mask = math.nan, connectivity = 1, two_sample = bool(0), min_cluster_size = 1):
+def find_clusters(test_statistic, cdt, below = bool(0), mask = math.nan, \
+                  connectivity = 1, two_sample = bool(0), min_cluster_size = 1):
     """ find_clusters
   Parameters
   ---------------------
@@ -53,7 +54,8 @@ plt.imshow(cluster_image)
         raise Exception("two sample hasn't been implemented yet!")
 
     if below:
-        cluster_image = measure.label((test_statistic < cdt)*(test_statistic > 0), connectivity = connectivity)
+        cluster_image = measure.label((test_statistic < cdt)*(test_statistic > 0), \
+                                    connectivity = connectivity)
     else:
         cluster_image = measure.label(test_statistic > cdt, connectivity = connectivity)
 
@@ -78,7 +80,8 @@ plt.imshow(cluster_image)
 
     return cluster_image, store_cluster_sizes
 
-def cluster_tdp(data, design, contrast_matrix, mask, n_bootstraps = 100, alpha = 0.1, min_cluster_size = 30, cdt = 0.001, method = 'boot'):
+def cluster_tdp(data, design, contrast_matrix, mask, n_bootstraps = 100, alpha = 0.1,\
+                min_cluster_size = 30, cdt = 0.001, method = 'boot'):
     """ cluster_tdp calculates the TDP (true discovery proportion) within
     clusters of the test-statistic.
   Parameters
@@ -98,16 +101,16 @@ def cluster_tdp(data, design, contrast_matrix, mask, n_bootstraps = 100, alpha =
     """
     # Obtain the number of parameters in the model
     n_params = contrast_matrix.shape[1]
-    
+
     # Obtain the number of contrasts
     n_contrasts = contrast_matrix.shape[0]
-    
+
     # Convert the data to a field
     data = pr.makefield(data)
 
     # Obtain the number of subjects
     nsubj = data.fibersize
-    
+
     # Obtain the test statistics and convert to p-values
     test_stats, _ = pr.contrast_tstats(data, design, contrast_matrix)
     pvalues = 2*(1 - t.cdf(abs(test_stats.field), nsubj-n_params))
@@ -115,13 +118,14 @@ def cluster_tdp(data, design, contrast_matrix, mask, n_bootstraps = 100, alpha =
     ### Perform Post-hoc inference
     if method == 'boot':
         # Run the bootstrapped algorithm
-        _, _, pivotal_stats, _ = pr.boot_contrasts(data, design, contrast_matrix, n_bootstraps = n_bootstraps, display_progress = 1)
+        _, _, pivotal_stats, _ = pr.boot_contrasts(data, design, \
+                        contrast_matrix, n_bootstraps = n_bootstraps, display_progress = 1)
 
         # Obtain the lambda calibration
         lambda_quant = np.quantile(pivotal_stats, alpha)
     else:
         lambda_quant = alpha
-        
+
     # Calculate the number of voxels in the mask
     n_vox_in_mask = np.sum(data.mask[:])
 
@@ -129,25 +133,26 @@ def cluster_tdp(data, design, contrast_matrix, mask, n_bootstraps = 100, alpha =
     thr = sa.t_linear(lambda_quant, np.arange(1,n_vox_in_mask+1), n_vox_in_mask)
 
     ### Calculate the TDP within each cluster
-    
+
     # Initialize the matrix to store the tdp
     tdp_bounds = np.zeros(pvalues.shape)
-        
+
     # Convert the mask to logical
     mask = mask > 0
 
     # For each cluster calculate the TDP
     for l in np.arange(n_contrasts):
         # Get the clusters of the test-statistic
-        cluster_im, cluster_sizes = pr.find_clusters(pvalues[..., l], cdt, below = 1, mask = mask, min_cluster_size = min_cluster_size)
+        cluster_im, cluster_sizes = pr.find_clusters(pvalues[..., l], cdt, below = 1, \
+                  mask = mask, min_cluster_size = min_cluster_size)
 
         # Obtain the number of clusters
         n_clusters = len(cluster_sizes)
-        
+
         for i in np.arange(n_clusters):
             # Obtain the logical entries for where each region is
             region_idx = cluster_im == (i+1)
-        
+
             # Compute the TP bound
             bound = sa.max_fp(pvalues[region_idx, l], thr)
             print(region_idx.shape)
@@ -158,7 +163,8 @@ def cluster_tdp(data, design, contrast_matrix, mask, n_bootstraps = 100, alpha =
 
 
 
-def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, fwhm = 4, alpha = 0.1, min_cluster_size = 30, cdt = 0.001, method = 'boot'):
+def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, fwhm = 4, \
+                      alpha = 0.1, min_cluster_size = 30, cdt = 0.001, method = 'boot'):
     """ cluster_tdp_brain calculates the TDP (true discovery proportion) within
     clusters of the test-statistic. This is specifically for brain images
     and enables plotting of these images using the nilearn toolbox
@@ -180,12 +186,13 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
     """
     # Obtain the number of parameters in the model
     n_params = contrast_matrix.shape[1]
-    
+
     # Obtain the number of contrasts
     n_contrasts = contrast_matrix.shape[0]
 
     #Load the data
-    masker = NiftiMasker(smoothing_fwhm = fwhm,mask_img = mask, memory='/storage/store2/work/sdavenpo/').fit()
+    masker = NiftiMasker(smoothing_fwhm = fwhm,mask_img = mask, \
+                         memory='/storage/store2/work/sdavenpo/').fit()
     data = masker.transform(imgs).transpose()
 
     # Convert the data to a field
@@ -193,7 +200,7 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
 
     # Obtain the number of subjects
     nsubj = data.fibersize
-    
+
     if not len(imgs) == nsubj:
         raise Exception("The number of subjects in imgs doesn't match the number within the data")
 
@@ -212,13 +219,14 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
      ### Perform Post-hoc inference
     if method == 'boot':
         # Run the bootstrapped algorithm
-        _, _, pivotal_stats, _ = pr.boot_contrasts(data, design, contrast_matrix, n_bootstraps = n_bootstraps, display_progress = 1)
+        _, _, pivotal_stats, _ = pr.boot_contrasts(data, design, contrast_matrix,\
+            n_bootstraps = n_bootstraps, display_progress = 1)
 
         # Obtain the lambda calibration
         lambda_quant = np.quantile(pivotal_stats, alpha)
     else:
         lambda_quant = alpha
-        
+
     # Calculate the number of voxels in the mask
     n_vox_in_mask = np.sum(mask[:])
 
@@ -226,10 +234,10 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
     thr = sa.t_linear(lambda_quant, np.arange(1,n_vox_in_mask+1), n_vox_in_mask)
 
     ### Calculate the TDP within each cluster
-    
+
     # Initialize the matrix to store the tdp
     tdp_bounds = np.zeros(pvalues_3d.shape)
-        
+
     # Convert the mask to logical
     mask = mask > 0
 
@@ -241,11 +249,11 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
 
         # Obtain the number of clusters
         n_clusters = len(cluster_sizes)
-        
+
         for i in np.arange(n_clusters):
             # Obtain the logical entries for where each region is
             region_idx = cluster_im == (i+1)
-        
+
             # Compute the TP bound
             bound = sa.max_fp(pvalues_3d[region_idx, l], thr)
             print(region_idx.shape)
@@ -253,4 +261,3 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
             tdp_bounds[region_idx, l] = (np.sum(region_idx) - bound)/np.sum(region_idx)
 
     return tdp_bounds, masker
-
