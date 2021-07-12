@@ -88,17 +88,17 @@ X = pr.group_design(categ); C = np.array(1); lat_data = pr.wfield(Dim,N)
 tstat, residuals = pr.contrast_tstats(lat_data, X, C)
 
   # Compare to mvtstat:
-  print(tstat.field.reshape(lat_data.masksize)); print(mvtstat(lat_data.field)[0])
+print(tstat.field.reshape(lat_data.masksize)); print(mvtstat(lat_data.field)[0])
 
   # Two Sample tstat
-  Dim = (10,10); N = 30; categ = np.random.binomial(1, 0.4, size = N)
-  X = group_design(categ); C = np.array((1,-1)); lat_data = pr.wfield(Dim,N)
-  tstats = contrast_tstats(lat_data, X, C)
+Dim = (10,10); N = 30; categ = np.random.binomial(1, 0.4, size = N)
+X = pr.group_design(categ); C = np.array((1,-1)); lat_data = pr.wfield(Dim,N)
+tstats = pr.contrast_tstats(lat_data, X, C)
 
   # 3 Sample tstat (lol)
-  Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
-  X = group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
-  tstats = contrast_tstats(lat_data, X, C)
+Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
+X = pr.group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
+tstats = pr.contrast_tstats(lat_data, X, C)
     """
     # Error check the inputs
     if check_error == 1:
@@ -198,7 +198,8 @@ def constrast_tstats_noerrorchecking(lat_data, design, contrast_matrix):
     nsubj = design.shape[0] # subjects
     n_params = design.shape[1] # parameters
 
-    #rfmate = np.identity(p) - np.dot(X, np.dot(np.linalg.inv(np.dot(np.transpose(X), X)), np.transpose(X)))
+    #rfmate = np.identity(p) - np.dot(X, np.dot(np.linalg.inv(np.dot(np.transpose(X), X)),z
+        #np.transpose(X)))
     # Calculate (X^TX)^(-1)
     xtx_inv = np.linalg.inv(design.T @ design)
 
@@ -286,14 +287,15 @@ def group_design(categ):
 
     # Ensure that the number of categories is not too high!
     if np.max(categ) > n_params - 1:
-        raise Exception("the maximum category number should not exceed one minus the number of categories")
+        raise Exception("the maximum category number should not exceed \
+                    one minus the number of categories")
 
     # Initialize the design matrix
     design = np.zeros((nsubj,n_params))
 
     # Set the elements of the design matrix by assigning each subject a category
-    for I in np.arange(nsubj):
-        design[I, int(categ[I])] = 1 # change so you do this all at once if possible!
+    for i in np.arange(nsubj):
+        design[i, int(categ[i])] = 1 # change so you do this all at once if possible!
 
     return design
 
@@ -318,7 +320,7 @@ def modul(iterand, niterand = 100):
     """
     if iterand % niterand == 0:
         print(iterand)
-    
+
 def tstat2pval( tstats, df, one_sample = 0 ):
     """ A function converts the test-statistics to pvalues
 
@@ -331,7 +333,7 @@ def tstat2pval( tstats, df, one_sample = 0 ):
 
   Returns
   ------------------
-  pvalues: 
+  pvalues:
 
 
   Examples
@@ -344,5 +346,5 @@ plt.hist(pvals)
         pvalues = 2*(1 - t.cdf(abs(tstats), df))
     else:
         pvalues = 1 - t.cdf(tstats, df)
-        
+
     return pvalues
