@@ -10,55 +10,55 @@ def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, templ
     """ A function to compute the voxelwise t-statistics for a set of contrasts
       and their (two-sided) p-value by bootstrapping the residuals
 
-  Parameters
-  -----------------
-  lat_data:  a numpy.ndarray of shape (dim, N) or an object of class field
-      giving the data where dim is the spatial dimension and N is the number of subjects
-      if a field then the fibersize must be 1 and the final dimension must be
-      the number of subjects
-  design: a numpy.ndarray of shape (N,p)
+    Parameters
+    -----------------
+    lat_data:  a numpy.ndarray of shape (dim, N) or an object of class field
+        giving the data where dim is the spatial dimension and N is the number of subjects
+        if a field then the fibersize must be 1 and the final dimension must be
+        the number of subjects
+    design: a numpy.ndarray of shape (N,p)
         giving the design matrix of covariates (p being the number of parameters)
-  contrast_matrix: a numpy.ndarray of shape (L,p)
+    contrast_matrix: a numpy.ndarray of shape (L,p)
         corresponding to the contrast matrix, such that which each row is a
         contrast vector (where L is the number of constrasts)
-  B: int,
-      giving the number of bootstraps to do (default is 1000)
-  t_inv: a python function
+    B: int,
+        giving the number of bootstraps to do (default is 1000)
+    t_inv: a python function
          that specifies the reference family the default is ss.t_inv_linear which
          corresponds to the linear reference family form the sansouci package
-  replace:  Bool
-      if True (default) then the residuals are sampled with replacement
-      (i.e. a bootstrap), if False then they are sampled without replacement
-      resulting in a permutation of the data
-  store_boots: Bool,
+    replace:  Bool
+        if True (default) then the residuals are sampled with replacement
+        (i.e. a bootstrap), if False then they are sampled without replacement
+        resulting in a permutation of the data
+    store_boots: Bool,
           An optional input that allows the bootstrapped p-values to be stored
           if 1. Default is 0, i.e. no such storage.
 
-  Returns
-  -----------------
-  minp_perm: a numpy.ndarray of shape (1, B),
+    Returns
+    -----------------
+    minp_perm: a numpy.ndarray of shape (1, B),
           where the bth entry (for 1<=b<=B) is the minimum p-value (calculated
           over space) of the bth bootstrap. The 0th entry is the minimum p-value
           for the original data.
-  orig_pvalues: an object of class field,
+    orig_pvalues: an object of class field,
           giving the p-value (calculated across subjects) of each of the voxels
           and with the same mask as the original data
-  pivotal_stats: a numpy.ndarray of shape (1,B)
+    pivotal_stats: a numpy.ndarray of shape (1,B)
           whose bth entry is the pivotal statistic of the bth bootstrap,
           i.e. min_{1 <= k <= m} t_k^-1(p_{(k:m)}(T_{n,b}^*)). These quantities
           are needed for joint error rate control. (At the moment it takes K = m.)
 
-  Examples
-  -----------------
-# 1D
-dim = 5; N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
-X = pr.group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(dim,N)
-minP, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, X, C)
+    Examples
+    -----------------
+    # 1D
+    dim = 5; N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
+    X = pr.group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(dim,N)
+    minP, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, X, C)
 
-# 2D
-dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
-X = pr.group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(dim,N)
-minP, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, X, C)
+    # 2D
+    dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
+    X = pr.group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(dim,N)
+    minP, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, X, C)
     """
     #### Prep
     # Convert the data to be a field if it is not one already

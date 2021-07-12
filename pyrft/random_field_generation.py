@@ -8,35 +8,35 @@ from scipy.ndimage import gaussian_filter
 def smooth(data, fwhm, mask = 0):
     """ smooth
 
-  Parameters
-  ---------------------
-  data    an object of class field
-  fwhm
-  mask   a numpy.nd array,
-          with the same dimensions as the data
+    Parameters
+    ---------------------
+    data    an object of class field
+    fwhm
+    mask   a numpy.nd array,
+            with the same dimensions as the data
 
-  Returns
-  ---------------------
-  An object of class field with
+    Returns
+    ---------------------
+    An object of class field with
 
-  Examples
-  ---------------------
-# 1D example
-f = pr.wfield(50,10)
-smooth_f = pr.smooth(f, 8)
-plt.plot(smooth_f.field)
+    Examples
+    ---------------------
+    # 1D example
+    f = pr.wfield(50,10)
+    smooth_f = pr.smooth(f, 8)
+    plt.plot(smooth_f.field)
 
-# 2D example
-f = pr.wfield((50,50), 10)
-smooth_f = pr.smooth(f, 8)
-plt.imshow(smooth_f.field[:,:,1])
+    # 2D example
+    f = pr.wfield((50,50), 10)
+    smooth_f = pr.smooth(f, 8)
+    plt.imshow(smooth_f.field[:,:,1])
 
-# 2D example with mask
-f = pr.wfield((50,50), 10)
-mask = np.zeros((50,50), dtype = 'bool')
-mask[15:35,15:35] = 1
-smooth_f = pr.smooth(f, 8, mask)
-plt.imshow(smooth_f.field[:,:,1])
+    # 2D example with mask
+    f = pr.wfield((50,50), 10)
+    mask = np.zeros((50,50), dtype = 'bool')
+    mask[15:35,15:35] = 1
+    smooth_f = pr.smooth(f, 8, mask)
+    plt.imshow(smooth_f.field[:,:,1])
     """
     # Convert a numpy array to a field if necessary
     if isinstance(data, np.ndarray):
@@ -50,44 +50,44 @@ plt.imshow(smooth_f.field[:,:,1])
     sigma = pr.fwhm2sigma(fwhm)
 
     for i in np.arange(data.fibersize):
-        data.field[...,i] = gaussian_filter(data.field[...,i]*data.mask, sigma = sigma)*data.mask
+        data.field[...,i] = gaussian_filter(data.field[...,i] * data.mask, sigma = sigma) * data.mask
 
     return data
 
 def statnoise(mask, nsubj, fwhm):
     """ statnoise constructs a an object of class Field with specified mask
-  and fibersize and consisting of stationary noise (arising from white noise
-  smoothed with a Gaussian kernel)
+    and fibersize and consisting of stationary noise (arising from white noise
+    smoothed with a Gaussian kernel)
 
-  Parameters
-  ---------------------
-  mask:   a tuple or a Boolean array,
+    Parameters
+    ---------------------
+    mask:   a tuple or a Boolean array,
           If a tuple then it gives the size of the mask (in which case the mask
           is taken to be all true)
           If a Boolean array then it is the mask itself
-  fibersize:   a tuple giving the fiber sizes (i.e. typically nsubj)
+    fibersize:   a tuple giving the fiber sizes (i.e. typically nsubj)
 
-  Returns
-  ---------------------
-  An object of class field with
+    Returns
+    ---------------------
+    An object of class field with
 
-  Examples
-  ---------------------
-Dim = (50,50); nsubj = 20; fwhm = 4
-F = pr.statnoise(Dim, nsubj, fwhm)
-plt.imshow(F.field[:,:,1])
+    Examples
+    ---------------------
+    Dim = (50,50); nsubj = 20; fwhm = 4
+    F = pr.statnoise(Dim, nsubj, fwhm)
+    plt.imshow(F.field[:,:,1])
 
-# No smoothing example:
-Dim = (50,50); nsubj = 20; fwhm = 0
-F = pr.statnoise(Dim, nsubj, fwhm)
-plt.imshow(F.field[:,:,1])
+    # No smoothing example:
+    Dim = (50,50); nsubj = 20; fwhm = 0
+    F = pr.statnoise(Dim, nsubj, fwhm)
+    plt.imshow(F.field[:,:,1])
 
-  Notes
-  ---------------------
-  Need to adjust this to account for the edge effect!
-  Also need to ensure that the field is variance 1!!
+    Notes
+    ---------------------
+    Need to adjust this to account for the edge effect!
+    Also need to ensure that the field is variance 1!!
     """
-  # Set the default dimension not to be 1D
+    # Set the default dimension not to be 1D
     use1d = 0
 
     # If the mask is logical use that!
@@ -128,31 +128,31 @@ plt.imshow(F.field[:,:,1])
 
 def wfield(mask, fibersize, field_type = 'N', field_params = 3):
     """ wfield constructs a an object of class Field with specified mask
-  and fibersize and consisting of white noise.
+    and fibersize and consisting of white noise.
 
-  Parameters
-  ---------------------
-  mask:   a tuple or a Boolean array,
+    Parameters
+    ---------------------
+    mask:   a tuple or a Boolean array,
           If a tuple then it gives the size of the mask (in which case the mask
           is taken to be all true)
           If a Boolean array then it is the mask itself
-  fibersize:   a tuple giving the fiber sizes (i.e. typically nsubj)
+    fibersize:   a tuple giving the fiber sizes (i.e. typically nsubj)
 
-  Returns
-  ---------------------
-  An object of class field with
+    Returns
+    ---------------------
+    An object of class field with
 
-  Examples
-  ---------------------
-example_field = pr.wfield(15, 10); print(example_field)
-example_field = pr.wfield((5,5), 10)
+    Examples
+    ---------------------
+    example_field = pr.wfield(15, 10); print(example_field)
+    example_field = pr.wfield((5,5), 10)
 
 
-  Notes
-  ---------------------
-  Need to ensure that this function works in all settings, i.e. 1D masks specified
-  as (10,1) for example! And under masks e.g.
-example_field = pr.wfield(np.array((0, 1, 1, 1, 0, 1, 1), dtype = 'bool'), 10)
+    Notes
+    ---------------------
+    Need to ensure that this function works in all settings, i.e. 1D masks specified
+    as (10,1) for example! And under masks e.g.
+    example_field = pr.wfield(np.array((0, 1, 1, 1, 0, 1, 1), dtype = 'bool'), 10)
     """
 
     # Set the default dimension not to be 1D

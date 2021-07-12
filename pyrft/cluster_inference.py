@@ -14,36 +14,36 @@ import pyrft as pr
 def find_clusters(test_statistic, cdt, below = bool(0), mask = math.nan, \
                   connectivity = 1, two_sample = bool(0), min_cluster_size = 1):
     """ find_clusters
-  Parameters
-  ---------------------
-  test_statistic:   a numpy.nd array,
-  cdt:    a double,
+    Parameters
+    ---------------------
+    test_statistic:   a numpy.nd array,
+    cdt:    a double,
         the cluster defining threshold
-  below: bool,
-      whether to define the clusters above or below the threshold. Default is 0 ie
-      clusters above.
-  mask
-  connectivity
-  two_sample
-  min_cluster_size
+    below: bool,
+       whether to define the clusters above or below the threshold. Default is 0 ie
+       clusters above.
+    mask
+    connectivity
+    two_sample
+    min_cluster_size
 
-  Returns
-  ---------------------
-  cluster_image:    a numpy.nd array,
+    Returns
+    ---------------------
+    cluster_image:    a numpy.nd array,
               with the same size as the test-statistic in which the clusters
               above the CDT are labelled each with a different number.
 
-  Examples
-  ---------------------
-# Clusters above 0.5
-cluster_image, cluster_sizes = pr.find_clusters(np.array([[1,0,1],[1,1,0]]), 0.5)
-# Clusters below 0.5
-cluster_image, cluster_sizes = pr.find_clusters(np.array([[1,0,1],[1,1,0]]), 0.5, below = 1)
-# tstat image
-f = pr.statnoise((50,50), 20, 10)
-tstat, xbar, std_dev = pr.mvtstat(f.field)
-cluster_image, c_sizes = pr.find_clusters(tstat, 2)
-plt.imshow(cluster_image)
+    Examples
+    ---------------------
+    # Clusters above 0.5
+    cluster_image, cluster_sizes = pr.find_clusters(np.array([[1,0,1],[1,1,0]]), 0.5)
+    # Clusters below 0.5
+    cluster_image, cluster_sizes = pr.find_clusters(np.array([[1,0,1],[1,1,0]]), 0.5, below = 1)
+    # tstat image
+    f = pr.statnoise((50,50), 20, 10)
+    tstat, xbar, std_dev = pr.mvtstat(f.field)
+    cluster_image, c_sizes = pr.find_clusters(tstat, 2)
+    plt.imshow(cluster_image)
     """
 
     # Mask the data if that is possible
@@ -157,7 +157,7 @@ def cluster_tdp(data, design, contrast_matrix, mask, n_bootstraps = 100, alpha =
             bound = sa.max_fp(pvalues[region_idx, l], thr)
             print(region_idx.shape)
             print(tdp_bounds[region_idx, l].shape)
-            tdp_bounds[region_idx, l] = (np.sum(region_idx) - bound)/np.sum(region_idx)
+            tdp_bounds[region_idx, l] = (np.sum(region_idx) - bound) / np.sum(region_idx)
 
     return tdp_bounds
 
@@ -168,21 +168,21 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
     """ cluster_tdp_brain calculates the TDP (true discovery proportion) within
     clusters of the test-statistic. This is specifically for brain images
     and enables plotting of these images using the nilearn toolbox
-  Parameters
-  ---------------------
-  imgs
-  design
-  contrast_matrix
-  savedir
-
-  Returns
-  ---------------------
-  cluster_image:    a numpy.nd array,
+    Parameters
+    ---------------------
+    imgs
+    design
+    contrast_matrix
+    savedir
+  
+    Returns
+    ---------------------
+    cluster_image:    a numpy.nd array,
               with the same size as the test-statistic in which the clusters
               above the CDT are labelled each with a different number.
 
-  Examples
-  ---------------------
+    Examples
+    ---------------------
     """
     # Obtain the number of parameters in the model
     n_params = contrast_matrix.shape[1]

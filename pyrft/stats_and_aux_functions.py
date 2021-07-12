@@ -10,26 +10,26 @@ from scipy.stats import t
 def mvtstat(data):
     """ A function to compute the multivariate t-statistic
 
-  Parameters
-  -----------------
-  data:  numpy.ndarray of shape (Dim, nsubj)
-      Here Dim is the size of the field and nsubj is the number of subjects
+    Parameters
+    -----------------
+    data:  numpy.ndarray of shape (Dim, nsubj)
+          Here Dim is the size of the field and nsubj is the number of subjects
 
-  Returns
-  -----------------
-  tstat:   numpy.ndarray of shape (Dim)
+    Returns
+    -----------------
+    tstat:   numpy.ndarray of shape (Dim)
           Each entry is the is the t-statistic calulcated across subjects
-  mean:    numpy.ndarray of shape (Dim)
+    mean:    numpy.ndarray of shape (Dim)
           Each entry is the is the mean calulcated across subjects
-  std:     numpy.ndarray of shape (Dim)
+    std:     numpy.ndarray of shape (Dim)
           Each entry is the is the standard deviation calulcated across subjects
 
-  Examples
-  -----------------
-  # tstat of random noise
-  noise = np.random.randn(50,50,20); arrays = mvtstat(noise);  tstat = arrays[0]
-  # For comparison to MATLAB
-  a = np.arange(12).reshape((3,4)).transpose()+1; tstat = mvtstat(a)[0]
+    Examples
+    -----------------
+    # tstat of random noise
+    noise = np.random.randn(50,50,20); arrays = mvtstat(noise);  tstat = arrays[0]
+    # For comparison to MATLAB
+    a = np.arange(12).reshape((3,4)).transpose()+1; tstat = mvtstat(a)[0]
     """
     # Obtain the size of the array
     s_data = np.shape(data)
@@ -57,48 +57,48 @@ def mvtstat(data):
 
 def contrast_tstats(lat_data, design, contrast_matrix, check_error = 1):
     """ A function to compute the voxelwise t-statistics for a set of contrasts
-  Parameters
-  -----------------
-  lat_data:  a numpy.ndarray of shape (Dim, N) or an object of class field
-      giving the data where Dim is the spatial dimension and N is the number of subjects
-      if a field then the fibersize must be 1 and the final dimension must be
-      the number of subjects
-  X: a numpy.ndarray of size (N,p)
+    Parameters
+    -----------------
+    lat_data:  a numpy.ndarray of shape (Dim, N) or an object of class field
+          giving the data where Dim is the spatial dimension and N is the number of subjects
+          if a field then the fibersize must be 1 and the final dimension must be
+          the number of subjects
+    X: a numpy.ndarray of size (N,p)
         giving the covariates (p being the number of parameters)
-  C: a numpy.ndarray of size (L,p)
+    C: a numpy.ndarray of size (L,p)
         corresponding to the contrast matrix, such that which each row is a
         contrast vector (where L is the number of constrasts)
-  check_error:  Bool,
+    check_error:  Bool,
           determining whether to perform error checking or not  (not always
           necessary e.g. during a permutation loop etc) default  is 1 i.e. to
           perform error checking
 
-  Returns
-  -----------------
-  tstat_field: an object of class field
+    Returns
+    -----------------
+    tstat_field: an object of class field
           which has spatial size the same as input data and fibersize equal
           to the number of contrasts
-   residuals: a
+    residuals: a
 
-  Examples
-  -----------------
-  # One Sample tstat
-Dim = (3,3); N = 30; categ = np.zeros(N)
-X = pr.group_design(categ); C = np.array(1); lat_data = pr.wfield(Dim,N)
-tstat, residuals = pr.contrast_tstats(lat_data, X, C)
+    Examples
+    -----------------
+    # One Sample tstat
+    Dim = (3,3); N = 30; categ = np.zeros(N)
+    X = pr.group_design(categ); C = np.array(1); lat_data = pr.wfield(Dim,N)
+    tstat, residuals = pr.contrast_tstats(lat_data, X, C)
 
-  # Compare to mvtstat:
-print(tstat.field.reshape(lat_data.masksize)); print(mvtstat(lat_data.field)[0])
+    # Compare to mvtstat:
+    print(tstat.field.reshape(lat_data.masksize)); print(mvtstat(lat_data.field)[0])
 
-  # Two Sample tstat
-Dim = (10,10); N = 30; categ = np.random.binomial(1, 0.4, size = N)
-X = pr.group_design(categ); C = np.array((1,-1)); lat_data = pr.wfield(Dim,N)
-tstats = pr.contrast_tstats(lat_data, X, C)
+    # Two Sample tstat
+    Dim = (10,10); N = 30; categ = np.random.binomial(1, 0.4, size = N)
+    X = pr.group_design(categ); C = np.array((1,-1)); lat_data = pr.wfield(Dim,N)
+    tstats = pr.contrast_tstats(lat_data, X, C)
 
-  # 3 Sample tstat (lol)
-Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
-X = pr.group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
-tstats = pr.contrast_tstats(lat_data, X, C)
+    # 3 Sample tstat (lol)
+    Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
+    X = pr.group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
+    tstats = pr.contrast_tstats(lat_data, X, C)
     """
     # Error check the inputs
     if check_error == 1:
@@ -153,43 +153,43 @@ def constrast_tstats_noerrorchecking(lat_data, design, contrast_matrix):
     run the error checking every time.
 
     Parameters
-  -----------------
-  lat_data:  an object of class field
+    -----------------
+    lat_data:  an object of class field
           the data for N subjects on which to calculate the contrasts
-  X: a numpy.ndarray of size (N,p)
+    X: a numpy.ndarray of size (N,p)
         giving the covariates (p being the number of parameters)
-  C: a numpy.ndarray of size (L,p)
+    C: a numpy.ndarray of size (L,p)
         corresponding to the contrast matrix, such that which each row is a
         contrast vector (where L is the number of constrasts)
-  check_error:  Bool,
+    check_error:  Bool,
           determining whether to perform error checking or not  (not always
           necessary e.g. during a permutation loop etc) default  is 1 i.e. to
           perform error checking
 
-  Returns
-  -----------------
-  tstat_field: an object of class field
+    Returns
+    -----------------
+    tstat_field: an object of class field
           which has spatial size the same as input data and fibersize equal
           to the number of contrasts
 
-  Examples
-  -----------------
-  # One Sample tstat
-  Dim = (3,3); N = 30; categ = np.zeros(N)
-  X = group_design(categ); C = np.array([[1]]); lat_data = pr.wfield(Dim,N)
-  tstat = constrast_tstats_noerrorchecking(lat_data, X, C)
-  # Compare to mvtstat:
-  print(tstat.field.reshape(lat_data.masksize)); print(mvtstat(lat_data.field)[0])
+    Examples
+    -----------------
+    # One Sample tstat
+    Dim = (3,3); N = 30; categ = np.zeros(N)
+    X = group_design(categ); C = np.array([[1]]); lat_data = pr.wfield(Dim,N)
+    tstat = constrast_tstats_noerrorchecking(lat_data, X, C)
+    # Compare to mvtstat:
+    print(tstat.field.reshape(lat_data.masksize)); print(mvtstat(lat_data.field)[0])
 
-  # Two Sample tstat
-  Dim = (10,10); N = 30; categ = np.random.binomial(1, 0.4, size = N)
-  X = group_design(categ); C = np.array([[1,-1]]); lat_data = pr.wfield(Dim,N)
-  tstats = constrast_tstats_noerrorchecking(lat_data, X, C)
+    # Two Sample tstat
+    Dim = (10,10); N = 30; categ = np.random.binomial(1, 0.4, size = N)
+    X = group_design(categ); C = np.array([[1,-1]]); lat_data = pr.wfield(Dim,N)
+    tstats = constrast_tstats_noerrorchecking(lat_data, X, C)
 
-  # 3 Sample tstat (lol)
-  Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
-  X = group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
-  tstats = constrast_tstats_noerrorchecking(lat_data, X, C)
+    # 3 Sample tstat (lol)
+    Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
+    X = group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
+    tstats = constrast_tstats_noerrorchecking(lat_data, X, C)
     """
     # Calculate the number of contrasts
     n_contrasts = contrast_matrix.shape[0]  # constrasts
@@ -241,19 +241,19 @@ def constrast_tstats_noerrorchecking(lat_data, design, contrast_matrix):
 def fwhm2sigma(fwhm):
     """ A function translate the standard deviation to FWHM
 
-  Parameters
-  -----------------
-  FWHM:    double,
+    Parameters
+    -----------------
+    FWHM:    double,
           a value specifying the full width half max
 
-  Returns
-  -----------------
-  sigma:    double,
+    Returns
+    -----------------
+    sigma:    double,
           the sigma corresponding to the FWHM
 
-  Examples
-  -----------------
-  # FWHM = 3; sigma = fwhm2sigma(FWHM)
+    Examples
+    -----------------
+    # FWHM = 3; sigma = fwhm2sigma(FWHM)
     """
     sigma = fwhm/np.sqrt(8*np.log(2))
 
@@ -262,22 +262,22 @@ def fwhm2sigma(fwhm):
 def group_design(categ):
     """ A function to compute the covariate matrix X for a given set of categories
 
-  Parameters
-  ------------------
-  categ:  a tuple of integers of length N
-      where N is the number of subjects). Each entry is number of the category
+    Parameters
+    ------------------
+    categ:  a tuple of integers of length N
+        where N is the number of subjects). Each entry is number of the category
         that a given subject belongs to (enumerated from 0 to ncateg - 1)
         E.g: (0,1,1,0) corresponds to 4 subjects, 2 categories and
                  (0,1,2,3,3,2) corresponds to 6 subjects and 4 categories
             Could make a category class!
 
-  Returns
-  ------------------
-  X: a design matrix that can be used to assign the correct categories
+    Returns
+    ------------------
+    X: a design matrix that can be used to assign the correct categories
 
-  Examples
-  ------------------
-  categ = (0,1,1,0); group_design(categ)
+    Examples
+    ------------------
+    categ = (0,1,1,0); group_design(categ)
     """
     # Calculate the number of subjects
     nsubj = len(categ)
@@ -301,22 +301,21 @@ def group_design(categ):
 
 def modul(iterand, niterand = 100):
     """ A function which allows you to easily check how a for loop is
-% progressing by displaying iterand iff it is evenly divided by niterand
+    % progressing by displaying iterand iff it is evenly divided by niterand
 
-  Parameters
-  ------------------
-  iterand:
-  niterand:
+    Parameters
+    ------------------
+    iterand:
+    niterand:
 
-  Returns
-  ------------------
-  Prints iterand if niterand divides into iterand
+    Returns
+    ------------------
+    Prints iterand if niterand divides into iterand
 
-
-  Examples
-  ------------------
-  pr.modul(100,10)
-  pr.modul(3,5)
+    Examples
+    ------------------
+    pr.modul(100,10)
+    pr.modul(3,5)
     """
     if iterand % niterand == 0:
         print(iterand)
@@ -324,23 +323,22 @@ def modul(iterand, niterand = 100):
 def tstat2pval( tstats, df, one_sample = 0 ):
     """ A function converts the test-statistics to pvalues
 
-  Parameters
-  ------------------
-  tstats
-  df:   int,
-      the degrees of freedom of the t-statistic
-  one_sample
+    Parameters
+    ------------------
+    tstats
+    df:   int,
+          the degrees of freedom of the t-statistic
+    one_sample
 
-  Returns
-  ------------------
-  pvalues:
+    Returns
+    ------------------
+    pvalues:
 
-
-  Examples
-  ------------------
-zvals = np.random.randn(1, 10000)
-pvals = tstat2pval( zvals[0], 1000, one_sample = 0 )
-plt.hist(pvals)
+    Examples
+    ------------------
+    zvals = np.random.randn(1, 10000)
+    pvals = tstat2pval( zvals[0], 1000, one_sample = 0 )
+    plt.hist(pvals)
     """
     if one_sample == 0:
         pvalues = 2*(1 - t.cdf(abs(tstats), df))

@@ -6,31 +6,31 @@ import pyrft as pr
 
 def fdr_bh( pvalues, alpha = 0.05 ):
     """ fdr_bh( pvalues, alpha ) implements the Benjamini-Hochberg procedure on 
-  a numpy array of pvalues, controlling the FDR to a level alpha
+    a numpy array of pvalues, controlling the FDR to a level alpha
 
-  Parameters
-  ---------------------
-  pvalues       a vector of p-values
-  alpha         the significance level, default is 0.05
+    Parameters
+    ---------------------
+    pvalues       a vector of p-values
+    alpha         the significance level, default is 0.05
 
-  Returns
-  ---------------------
-  rejection_ind: a boolean numpy array,
+    Returns
+    ---------------------
+    rejection_ind: a boolean numpy array,
       with the same size as pvalues such that a
               given entry is 1 if that point is rejected and 0 otherwise
-  n_rejections: int,
+    n_rejections: int,
       the total number of rejections
-  rejection_locs:  a int numpy array
+    rejection_locs:  a int numpy array
       the locations of the rejections
 
-  Examples
-  ---------------------
-from scipy.stats import norm
-nvals = 100; normal_rvs = np.random.randn(1,100)[0]
-normal_rvs[0:20] = normal_rvs[0:20] + 2
-pvalues = 1 - norm.cdf(normal_rvs)
-rejection_ind, n_rejections, sig_locs = pr.fdr_bh(pvalues)
-print(sig_locs)
+    Examples
+    ---------------------
+    from scipy.stats import norm
+    nvals = 100; normal_rvs = np.random.randn(1,100)[0]
+    normal_rvs[0:20] = normal_rvs[0:20] + 2
+    pvalues = 1 - norm.cdf(normal_rvs)
+    rejection_ind, n_rejections, sig_locs = pr.fdr_bh(pvalues)
+    print(sig_locs)
     """
     # Get the dimension of the pvalues
     dim = pvalues.shape

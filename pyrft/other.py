@@ -63,10 +63,10 @@ def _compute_hommel_value(pvalues, alpha = 0.1):
 
     Examples
     ---------------------
-zvals = np.random.randn(1, 100)
-zvals = zvals[0]
-pvals = norm.sf(zvals)
-out =  _compute_hommel_value(pvals, alpha = 0.1)
+    zvals = np.random.randn(1, 100)
+    zvals = zvals[0]
+    pvals = norm.sf(zvals)
+    out =  _compute_hommel_value(pvals, alpha = 0.1)
     """
     # Ensure that the alpha level is between 0 and 1
     if alpha < 0 or alpha > 1:

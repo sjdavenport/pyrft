@@ -7,37 +7,37 @@ import pyrft as pr
 class Field:
     """ Field class
     Parameters
-  --------------------
-  field:  a numpy.ndarray of shape (Dim) or (Dim, fibersize)
+    --------------------
+    field:  a numpy.ndarray of shape (Dim) or (Dim, fibersize)
       Here Dim is the size of the field and fibersize is an index for the fields,
       typically fibersize is the number of subjects.
 
-  mask:  Bool,
+    mask:  Bool,
       a boolean numpty array giving the spatial mask the size of which
            must be compatible with the field
 
-  Returns
-  --------------------
-  An object of class field
+    Returns
+    --------------------
+    An object of class field
 
-  Examples
-  --------------------
-  # 1D
-field = np.random.randn(100,30)
-mask = np.ones((100,1), dtype = bool)
-exField = pr.Field(field, mask)
-print(exField)
-  # 2D
-field = np.random.randn(100,100,30)
-mask = np.ones((100,100), dtype = bool)
-exField = pr.Field(field, mask)
-print(exField)
-# 2D no subjects
-field = np.random.randn(100,100)
-mask = np.ones((100,100), dtype = bool)
-exField = pr.Field(field, mask)
-print(exField)
-  -----------------------------------------------------------------------------
+    Examples
+    --------------------
+    # 1D
+    field = np.random.randn(100,30)
+    mask = np.ones((100,1), dtype = bool)
+    exField = pr.Field(field, mask)
+    print(exField)
+    # 2D
+    field = np.random.randn(100,100,30)
+    mask = np.ones((100,100), dtype = bool)
+    exField = pr.Field(field, mask)
+    print(exField)
+    # 2D no subjects
+    field = np.random.randn(100,100)
+    mask = np.ones((100,100), dtype = bool)
+    exField = pr.Field(field, mask)
+    print(exField)
+    -----------------------------------------------------------------------------
     """
     def __init__(self, field, mask):
         self.field = field
@@ -167,22 +167,22 @@ print(exField)
 def makefield(array, fibersize = 1):
     """ conv2field converts a numpy array to am object of class field
 
-  Parameters
-  --------------------
-  array:  a numpy.ndarray of shape (Dim, fibersize),
-      Here Dim is the spatial size and fibersize is the index dimension
-  fibersize:  int,
+    Parameters
+    --------------------
+    array:  a numpy.ndarray of shape (Dim, fibersize),
+        Here Dim is the spatial size and fibersize is the index dimension
+    fibersize:  int,
          specifies the size of the fiber, typically this is 1 i.e. when the
          last dimension of array corresponds to the fibersize
 
-  Returns
-  --------------------
-  F: An object of class field with
+    Returns
+    --------------------
+    F: An object of class field with
 
-  Examples
-  --------------------
-data = np.random.randn(100,30)
-F = pr.makefield(data)
+    Examples
+    --------------------
+    data = np.random.randn(100,30)
+    F = pr.makefield(data)
     """
     fieldsize = array.shape
     D = len(fieldsize) - fibersize
