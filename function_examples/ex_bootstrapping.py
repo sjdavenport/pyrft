@@ -4,7 +4,7 @@ Testing bootstrapping in the linear model
 import pyrft as pr
 import numpy as np
 Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
-X = pr.groupX(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
+X = pr.group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
 
 minP, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, X, C)
 
@@ -19,7 +19,7 @@ print(np.amin(ss.t_inv_linear(orig_pvalues_sorted)))
 ### One sample, one voxel test
 alpha = 0.1; niters = 1000;
 Dim = (10,10); N = 20; categ = np.zeros(N)
-X = pr.groupX(categ); C = np.array(1); 
+X = pr.group_design(categ); C = np.array(1); 
 
 number_of_false_positives = 0
 store_origs = np.zeros((1,niters))
@@ -38,7 +38,7 @@ FPR = number_of_false_positives/niters
 alpha = 0.1; niters = 1000;
 Dim = (10,10); N = 30; 
 categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
-X = pr.groupX(categ); 
+X = pr.group_design(categ); 
 C = np.array([[1,-1,0],[0,1,-1]]); 
 B = 100
 
@@ -61,7 +61,7 @@ Dim = (50,50); N = 30;
 from sklearn.utils import check_random_state
 rng = check_random_state(101)
 categ = rng.choice(3, N, replace = True)
-X = pr.groupX(categ); 
+X = pr.group_design(categ); 
 C = np.array([1,-1,0]); 
 B = 100
 
@@ -92,7 +92,7 @@ Dim = (10,10); N = 150;
 from sklearn.utils import check_random_state
 rng = check_random_state(101)
 categ = rng.choice(3, N, replace = True)
-X = pr.groupX(categ); 
+X = pr.group_design(categ); 
 C = np.array([1,-1,0]); 
 w2 = np.where(categ==2) # I.e. there is signal but not in the constrasts of interest
 B = 100
@@ -116,7 +116,7 @@ FPR = number_of_false_positives/niters
 import pyrft as pr
 import numpy as np
 Dim = (10,10); N = 100; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
-X = pr.groupX(categ); C = np.array([1,-1,0]); lat_data = pr.statnoise(Dim,N,4)
+X = pr.group_design(categ); C = np.array([1,-1,0]); lat_data = pr.statnoise(Dim,N,4)
 B = 100;
 
 minP, orig_pvalues, pivotal_stats, bs = pr.boot_contrasts(lat_data, X, C, B, ss.t_inv_linear, True, 1)

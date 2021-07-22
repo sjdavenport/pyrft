@@ -19,5 +19,5 @@ def test_fdr_bh():
     assert isinstance(sig_locs, np.ndarray)
 
     assert rejection_ind.shape == (nvals,)
-    assert isinstance(n_rejections, np.intc)
+    assert n_rejections == int(n_rejections)
     assert sig_locs.shape == (n_rejections,)

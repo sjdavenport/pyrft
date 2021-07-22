@@ -1,8 +1,11 @@
+import numpy as np
+import pyrft as pr
+
 Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
-X = groupX(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
+X = pr.group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
 
 Dim = (3,3); N = 30; categ = np.zeros(N)
-X = groupX(categ); C = np.array(1); lat_data = pr.wfield(Dim,N)
+X = pr.group_design(categ); C = np.array(1); lat_data = pr.wfield(Dim,N)
 
 #Need to check that the dimensions of X and C and lat_data match!
 
@@ -68,13 +71,13 @@ for l in np.arange(L):
 # Generate the field of tstats
 tstat_field = pr.Field(tstats, lat_data.mask)
 print(tstat_field.field)
-tstat, xbar, std_dev = mvtstat(lat_data.field)
+tstat, xbar, std_dev = pr.mvtstat(lat_data.field)
 print(tstat)
 
 # %%
 from matplotlib import pyplot as plt 
 Dim = (1000,1000); N = 6; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
-X = pr.groupX(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
+X = pr.group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
 p = C.shape[1]
 
 c_tstats = pr.contrast_tstats(lat_data, X, C)
