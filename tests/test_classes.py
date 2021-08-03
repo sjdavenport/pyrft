@@ -49,13 +49,13 @@ def test_Field():
     assert f.fibersize == 1
     assert f.field.shape == f.fieldsize
 
-def test_makefield():
-    """ Testing the makefield function """
+def test_make_field():
+    """ Testing the make_field function """
     nvox = 100
     nsubj = 30
     data = np.random.randn(nvox, nsubj)
 
-    f = pr.makefield(data)
+    f = pr.make_field(data)
     assert isinstance(f, pr.classes.Field)
 
     assert f.fieldsize == (nvox, nsubj)

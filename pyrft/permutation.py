@@ -6,6 +6,7 @@ import numpy as np
 from sklearn.utils import check_random_state
 from scipy.stats import t
 
+
 def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, template = 'linear', replace = True, store_boots = 0, display_progress = 0):
     """ A function to compute the voxelwise t-statistics for a set of contrasts
       and their (two-sided) p-value by bootstrapping the residuals
@@ -63,7 +64,7 @@ def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, templ
     #### Prep
     # Convert the data to be a field if it is not one already
     if isinstance(lat_data, np.ndarray):
-        lat_data = pr.makefield(lat_data)
+        lat_data = pr.make_field(lat_data)
 
     # Ensure that the fibersize of the field is 1
     if isinstance(lat_data.fibersize, tuple):
@@ -313,7 +314,7 @@ minP, orig_pvalues, pivotal_stats = pr.perm_contrasts(lat_data, X, c)
     """
     # Convert the data to be a field if it is not one already
     if isinstance(lat_data, np.ndarray):
-        lat_data = pr.makefield(lat_data)
+        lat_data = pr.make_field(lat_data)
 
     # Error check the inputs and obtain the size of X
     contrast_vector, nsubj, n_params = pr.contrast_error_checking(lat_data,design,contrast_vector)

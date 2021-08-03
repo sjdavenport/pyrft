@@ -166,7 +166,7 @@ class Field:
     masksize = property(_get_masksize, _set_masksize)
 
     
-def makefield(array, fibersize=1):
+def make_field(array, fibersize=1):
     """ conv2field converts a numpy array to am object of class field
 
     Parameters
@@ -184,7 +184,7 @@ def makefield(array, fibersize=1):
     Examples
     --------
     data = np.random.randn(100, 30)
-    F = pr.makefield(data)
+    F = pr.make_field(data)
     """
     fieldsize = array.shape
     D = len(fieldsize) - fibersize

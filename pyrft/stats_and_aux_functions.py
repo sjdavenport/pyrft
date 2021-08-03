@@ -7,6 +7,7 @@ import numpy as np
 import pyrft as pr
 from scipy.stats import t
 
+
 def mvtstat(data):
     """ A function to compute the multivariate t-statistic
 
@@ -54,6 +55,7 @@ def mvtstat(data):
     tstat = np.sqrt(nsubj)*cohensd
 
     return tstat, xbar, std_dev
+
 
 def contrast_tstats(lat_data, design, contrast_matrix, check_error = 1):
     """ A function to compute the voxelwise t-statistics for a set of contrasts
@@ -106,12 +108,13 @@ def contrast_tstats(lat_data, design, contrast_matrix, check_error = 1):
 
     # Convert the data to be a field if it is not one already
     if isinstance(lat_data, np.ndarray):
-        lat_data = pr.makefield(lat_data)
+        lat_data = pr.make_field(lat_data)
 
     # Having now run error checking calculate the contrast t-statistics
     tstat_field, residuals = constrast_tstats_noerrorchecking(lat_data, design, contrast_matrix)
 
     return tstat_field, residuals
+
 
 def contrast_error_checking(lat_data,design,contrast_matrix):
     """ A function which performs error checking on the contrast data to ensure
@@ -146,6 +149,7 @@ def contrast_error_checking(lat_data,design,contrast_matrix):
         raise Exception('The number of subjects in design and lat_data do not match')
 
     return contrast_matrix, nsubj, n_params
+
 
 def constrast_tstats_noerrorchecking(lat_data, design, contrast_matrix):
     """ A function to compute the voxelwise t-statistics for a set of contrasts
@@ -238,6 +242,7 @@ def constrast_tstats_noerrorchecking(lat_data, design, contrast_matrix):
 
     return tstat_field, residuals
 
+
 def fwhm2sigma(fwhm):
     """ A function translate the standard deviation to FWHM
 
@@ -255,9 +260,10 @@ def fwhm2sigma(fwhm):
     -----------------
     # FWHM = 3; sigma = fwhm2sigma(FWHM)
     """
-    sigma = fwhm/np.sqrt(8*np.log(2))
+    sigma = fwhm / np.sqrt(8 * np.log(2))
 
     return sigma
+
 
 def group_design(categ):
     """ A function to compute the covariate matrix X for a given set of categories
@@ -299,6 +305,7 @@ def group_design(categ):
 
     return design
 
+
 def modul(iterand, niterand = 100):
     """ A function which allows you to easily check how a for loop is
     % progressing by displaying iterand iff it is evenly divided by niterand
@@ -319,6 +326,7 @@ def modul(iterand, niterand = 100):
     """
     if iterand % niterand == 0:
         print(iterand)
+
 
 def tstat2pval( tstats, df, one_sample = 0 ):
     """ A function converts the test-statistics to pvalues
@@ -341,7 +349,7 @@ def tstat2pval( tstats, df, one_sample = 0 ):
     plt.hist(pvals)
     """
     if one_sample == 0:
-        pvalues = 2*(1 - t.cdf(abs(tstats), df))
+        pvalues = 2 * (1 - t.cdf(abs(tstats), df))
     else:
         pvalues = 1 - t.cdf(tstats, df)
 
