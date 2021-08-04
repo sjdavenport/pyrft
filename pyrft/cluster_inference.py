@@ -106,7 +106,7 @@ def cluster_tdp(data, design, contrast_matrix, mask, n_bootstraps = 100, alpha =
     n_contrasts = contrast_matrix.shape[0]
 
     # Convert the data to a field
-    data = pr.makefield(data)
+    data = pr.make_field(data)
 
     # Obtain the number of subjects
     nsubj = data.fibersize
@@ -196,7 +196,7 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
     data = masker.transform(imgs).transpose()
 
     # Convert the data to a field
-    data = pr.makefield(data)
+    data = pr.make_field(data)
 
     # Obtain the number of subjects
     nsubj = data.fibersize

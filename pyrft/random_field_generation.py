@@ -40,7 +40,7 @@ def smooth(data, fwhm, mask = 0):
     """
     # Convert a numpy array to a field if necessary
     if isinstance(data, np.ndarray):
-        data = pr.makefield(data)
+        data = pr.make_field(data)
 
     # If a non-zero mask is supplied used this instead of the mask associated with data
     if np.sum(np.ravel(mask)) > 0:

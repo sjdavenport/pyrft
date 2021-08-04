@@ -6,8 +6,9 @@ import pyrft as pr
 
 class Field:
     """ Field class
+
     Parameters
-    --------------------
+    ----------
     field:  a numpy.ndarray of shape (Dim) or (Dim, fibersize)
       Here Dim is the size of the field and fibersize is an index for the fields,
       typically fibersize is the number of subjects.
@@ -17,24 +18,24 @@ class Field:
            must be compatible with the field
 
     Returns
-    --------------------
+    -------
     An object of class field
 
     Examples
-    --------------------
+    --------
     # 1D
-    field = np.random.randn(100,30)
-    mask = np.ones((100,1), dtype = bool)
+    field = np.random.randn(100, 30)
+    mask = np.ones((100, 1), dtype=bool)
     exField = pr.Field(field, mask)
     print(exField)
     # 2D
-    field = np.random.randn(100,100,30)
-    mask = np.ones((100,100), dtype = bool)
+    field = np.random.randn(100, 100, 30)
+    mask = np.ones((100, 100), dtype=bool)
     exField = pr.Field(field, mask)
     print(exField)
     # 2D no subjects
-    field = np.random.randn(100,100)
-    mask = np.ones((100,100), dtype = bool)
+    field = np.random.randn(100, 100)
+    mask = np.ones((100, 100), dtype=bool)
     exField = pr.Field(field, mask)
     print(exField)
     -----------------------------------------------------------------------------
@@ -72,13 +73,13 @@ class Field:
             self.fibersize = self.field.shape[self.D:]
             if len(self.fibersize) == 1:
                 self.fibersize = self.field.shape[self.D:][0]
-            elif self.masksize == (1,1):
-                self.fibersize = self.field.shape[self.D+1:][0]
+            elif self.masksize == (1, 1):
+                self.fibersize = self.field.shape[self.D + 1:][0]
 
         # Ensure that the size of the mask matches the size of the field
-        if self.D > 1 and field.shape[0:self.D] != self.masksize:
+        if self.D > 1 and field.shape[0: self.D] != self.masksize:
             raise Exception("The size of the spatial field must match the mask")
-        elif self.D == 1 and field.shape[0:self.D][0] != self.masksize[1]:
+        elif self.D == 1 and field.shape[0: self.D][0] != self.masksize[1]:
             # If the size of the mask doesn't match the field then return an error
             raise Exception("The size of the spatial field must match the mask")
 
@@ -164,25 +165,26 @@ class Field:
     fieldsize = property(_get_fieldsize, _set_fieldsize)
     masksize = property(_get_masksize, _set_masksize)
 
-def makefield(array, fibersize = 1):
+    
+def make_field(array, fibersize=1):
     """ conv2field converts a numpy array to am object of class field
 
     Parameters
-    --------------------
-    array:  a numpy.ndarray of shape (Dim, fibersize),
-        Here Dim is the spatial size and fibersize is the index dimension
-    fibersize:  int,
-         specifies the size of the fiber, typically this is 1 i.e. when the
-         last dimension of array corresponds to the fibersize
+    ----------
+    array:  numpy.ndarray of shape (Dim, fibersize),
+            Here Dim is the spatial size and fibersize is the index dimension
+    fibersize: int,
+               specifies the size of the fiber, typically this is 1 i.e. when the
+               last dimension of array corresponds to the fibersize
 
     Returns
-    --------------------
-    F: An object of class field with
+    -------
+    F: object of class field
 
     Examples
-    --------------------
-    data = np.random.randn(100,30)
-    F = pr.makefield(data)
+    --------
+    data = np.random.randn(100, 30)
+    F = pr.make_field(data)
     """
     fieldsize = array.shape
     D = len(fieldsize) - fibersize
