@@ -195,11 +195,11 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
   -----------------
 # 1D
 dim = 5; nsubj = 30; C = np.array([[1,-1,0],[0,1,-1]]);
-FWER_FPR, JER_FPR = pr.bootFPR(dim, nsubj, C)
+FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C)
 
 # 2D
 dim = (10,10); nsubj = 30; C = np.array([[1,-1,0],[0,1,-1]]);
-FWER_FPR, JER_FPR = pr.bootFPR(dim, nsubj, C)
+FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C)
     """
     # Initialize the FPR counter
     n_falsepositives_jer = 0 # jer stands for joint error rate here

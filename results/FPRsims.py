@@ -113,7 +113,7 @@ for J in np.arange(len(dim_sides)):
   for I in np.arange(len(nsubj_vec)):
       
     print('I:', I)
-    FWER_FPR, JER_FPR = pr.bootFPR(Dim, nsubj_vec[I], C, FWHM, 0, B)
+    FWER_FPR, JER_FPR = pr.bootfpr(Dim, nsubj_vec[I], C, FWHM, 0, B)
     store_JER[I,J] = JER_FPR
     store_FWER[I,J] = FWER_FPR
     np.savez(saveloc + '.npz', JER_FPR  = store_JER, FWER_FPR = store_FWER)

@@ -5,8 +5,39 @@ A file contain statistics functions
 # Import statements
 import numpy as np
 import pyrft as pr
-from scipy.stats import t
+from scipy.stats import t, norm
 
+def bernstd(p, nsubj, confidence_level = 0.95):
+    """ A function to compute the multivariate t-statistic
+
+    Parameters
+    -----------------
+    p:  float,
+        the value at which to generate confidence intervals about
+    nsubj:  int,
+        the number of subjects
+    confidence_level: float,
+        a number between 0 and 1 that gives the size of the confidence interval
+        that is desired. Default is 0.95, i.e. yielding a 95% confidence interval
+
+    Returns
+    -----------------
+    interval:  tuple,
+        giving the left and right bounds of the confidence interval
+    std_error: float,
+        the standard error (i..e sigmahat)
+
+    Examples
+    -----------------
+    bernstd(0.05,1000,0.95)
+    """
+    # Calulate the standard error
+    std_error = (p * (1 - p))**(1/2) * norm.ppf( 1 - (1 - confidence_level)/2 ) / np.sqrt(nsubj)
+    
+    # Use this to generate a confidence interval
+    interval = ( p - std_error, p + std_error )
+    
+    return interval, std_error
 
 def mvtstat(data):
     """ A function to compute the multivariate t-statistic
