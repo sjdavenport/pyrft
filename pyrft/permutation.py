@@ -42,8 +42,9 @@ def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, templ
           over space) of the bth bootstrap. The 0th entry is the minimum p-value
           for the original data.
     orig_pvalues: an object of class field,
-          giving the p-value (calculated across subjects) of each of the voxels
-          and with the same mask as the original data
+          of size (dim, n_constrasts) giving the p-value (calculated across subjects) 
+          of each of the voxels across the different contrasts and 
+          with the same mask as the original data
     pivotal_stats: a numpy.ndarray of shape (1,B)
           whose bth entry is the pivotal statistic of the bth bootstrap,
           i.e. min_{1 <= k <= m} t_k^-1(p_{(k:m)}(T_{n,b}^*)). These quantities
@@ -151,55 +152,63 @@ def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, templ
 
     return [minp_perm, orig_pvalues, pivotal_stats, bootstore]
 
-def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 100, niters = 1000, alpha = 0.1, template = 'linear', replace = True, useboot = True):
+def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 100, niters = 1000, pi0 = 1, alpha = 0.1, template = 'linear', replace = True, useboot = True):
     """ A function which calculates FWER and JER error rates using niters iterations
 
-  Parameters
-  -----------------
-  dim: a tuple,
-      giving the dimensions of the data to generate
-  nsubj: an int,
-      giving the number of subjects to use
-  C: a numpy.ndarray of shape (L,p)
-        corresponding to the contrast matrix, such that which each row is a
-        contrast vector (where L is the number of constrasts)
-  design: a numpy.ndarray of size (N,p) or an int
+    Parameters
+    -----------------
+    dim: a tuple,
+        giving the dimensions of the data to generate
+    nsubj: int,
+        giving the number of subjects to use
+    C: a numpy.ndarray of shape (L,p)
+          corresponding to the contrast matrix, such that which each row is a
+          contrast vector (where L is the number of constrasts)
+    design: a numpy.ndarray of size (N,p) or an int
         giving the covariates (p being the number of parameters), if set to be
         an integer then random category vectors are generated for each iteration
         and a corresponding design matrix selected
-  fwhm: an int,
-      giving the fwhm with which to smooth the data (default is 0 i.e. generating
+    fwhm: int,
+        giving the fwhm with which to smooth the data (default is 0 i.e. generating
                                                 white noise without smoothing)
-  B: int,
-      giving the number of bootstraps to do (default is 1000)
-  niters: int,
+    n_bootstraps: int,
+        giving the number of bootstraps to do (default is 1000)
+
+    niters: int,
       giving the number of iterations to use to estimate the FPR
-  alpha: int,
+    alpha: int,
        the alpha level at which to control (default is 0.1)
-  t_inv: specifying the reference family (default is the linear reference family)
-  replace:  Bool
-      if True (default) then the residuals are sampled with replacement
-      (i.e. a bootstrap), if False then they are sampled without replacement
-      resulting in a permutation of the data
-  useboot: Bool,
-      determines whether to use bootstrapping to analyse the data or permutation
+    t_inv: specifying the reference family (default is the linear reference family)
+    replace:  Bool
+        if True (default) then the residuals are sampled with replacement
+        (i.e. a bootstrap), if False then they are sampled without replacement
+        resulting in a permutation of the data
+    useboot: Bool,
+        determines whether to use bootstrapping to analyse the data or permutation,
+        the default is True, i.e. to use bootstrapping
 
-  Returns
-  -----------------
-  fpr_fwer: double,
-      the false positive rate for FWER control
-  fpr_jer: double,
-      the false positive rate for JER control
+    Returns
+    -----------------
+    fpr_fwer: double,
+        the false positive rate for FWER control
+    fpr_jer: double,
+        the false positive rate for JER control
 
-  Examples
-  -----------------
-# 1D
-dim = 5; nsubj = 30; C = np.array([[1,-1,0],[0,1,-1]]);
-FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C)
+    Examples
+    -----------------
+    # 1D no signal
+    dim = 5; nsubj = 30; C = np.array([[1,-1,0],[0,1,-1]]);
+    FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C)
+    
+    # 1D with signal
 
-# 2D
-dim = (10,10); nsubj = 30; C = np.array([[1,-1,0],[0,1,-1]]);
-FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C)
+    # 2D
+    dim = (10,10); nsubj = 30; C = np.array([[1,-1,0],[0,1,-1]]);
+    FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C)
+    
+    # 2D with signal
+    dim = (25,25); nsubj = 100; C = np.array([[1,-1,0],[0,1,-1]]);
+    FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C, 8, 0, 100, 1000, 0.8)
     """
     # Initialize the FPR counter
     n_falsepositives_jer = 0 # jer stands for joint error rate here
@@ -222,46 +231,92 @@ FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C)
 
     if len(contrast_matrix.shape) == 1:
         n_contrasts = 1
+        n_groups = 1
     else:
-        n_contrasts = contrast_matrix.shape[1]
-
+        n_contrasts = contrast_matrix.shape[0]
+        n_groups = contrast_matrix.shape[1]
+        
+    # Initialize the true signal vector
+    nvox = np.prod(dim)
+    m = nvox*n_contrasts
+    ntrue = int(np.round(pi0 * m))
+    signal_entries = np.zeros(m)
+    signal_entries[ntrue:] = 1
+    
     # Calculate the FPR
     for i in np.arange(niters):
         # Keep track of the progress.
-        pr.modul(i,100)
+        pr.modul(i,1)
 
         # Generate the data (i.e. generate stationary random fields)
         lat_data = pr.statnoise(dim,nsubj,fwhm)
 
         if isinstance(design, int):
             # Generate a random category vector with choices given by the design matrix
-            categ = rng.choice(n_contrasts, nsubj, replace = True)
+            categ = rng.choice(n_groups, nsubj, replace = True)
 
             # Ensure that all categories are present in the category vector
-            while len(np.unique(categ)) < n_contrasts:
+            while len(np.unique(categ)) < n_groups:
                 print('had rep error')
-                categ = rng.choice(n_contrasts, nsubj, replace = True)
+                categ = rng.choice(n_groups, nsubj, replace = True)
 
             # Generate the corresponding design matrix
             design_2use = pr.group_design(categ)
+            
+        # Generate the signal by random shuffling the original signal
+        # (if the proportion of signal is non-zero)
+        if isinstance(dim, int):
+            signal = pr.make_field(np.zeros((dim,n_contrasts)))
+        else:
+            signal = pr.make_field(np.zeros(dim + (n_contrasts,)))
+        if pi0 < 1:
+            rng = check_random_state(104)
+            shuffle_idx = rng.choice(m, m, replace = False)
+            shuffled_signal = signal_entries[shuffle_idx]
+            spatial_signal2add = np.zeros(dim)
+            for j in np.arange(n_contrasts):
+                contrast_signal = shuffled_signal[j*nvox:(j+1)*nvox]
+                signal.field[..., j] = contrast_signal.reshape(dim)
+                spatial_signal2add += signal.field[..., j]
+                subjects_with_this_contrast = np.where(categ==(j+1))[0]
 
+                # Add the signal to the field
+                for k in np.arange(len(subjects_with_this_contrast)):
+                    lat_data.field[..., subjects_with_this_contrast[k]] += spatial_signal2add
+                    
+        # Convert the signal to boolean
+        signal.field = signal.field == 0
         if useboot:
             # Implement the bootstrap algorithm on the generated data
-            minp_perm, _, pivotal_stats, _ = pr.boot_contrasts(lat_data, design_2use, contrast_matrix, n_bootstraps, t_inv, replace)
+            minp_perm, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, design_2use, contrast_matrix, n_bootstraps, t_inv, replace)
         else:
             perm_contrasts(lat_data, design_2use, contrast_matrix, n_bootstraps, t_inv)
 
         # Calculate the lambda alpha level quantile for JER control
         lambda_quant = np.quantile(pivotal_stats, alpha)
-
-        # Check whether there is a jER false rejection or not
-        if pivotal_stats[0] < lambda_quant:
+        
+        # Calculate the null p-values 
+        null_pvalues = np.sort(orig_pvalues.field[signal.field])
+        #null_pvalues = np.array([])
+        #for j in np.arange(n_contrasts):
+        #    null_pvalues = np.append(null_pvalues, orig_pvalues.field[signal.field[..., j], j])
+        
+        extended_null_pvalues = np.ones(m)
+        extended_null_pvalues[0:len(null_pvalues)] = null_pvalues
+        extended_null_pvalues_tinv = t_inv(np.asmatrix(extended_null_pvalues))
+        null_pivotal_statistic = np.amin(extended_null_pvalues_tinv[0:len(null_pvalues)])
+        
+        # Check whether there is a JER false rejection or not
+        # Use pivotal_stats[0] since it corresponds to the original pivotal statistic
+        # (i.e. not bootstrapped)
+        #if pivotal_stats[0] < lambda_quant:
+        if null_pivotal_statistic < lambda_quant:
             n_falsepositives_jer = n_falsepositives_jer + 1
 
         # Calculate the alpha quantile of the permutation distribution of the minimum
         alpha_quantile = np.quantile(minp_perm, alpha)
 
-        if minp_perm[0] < alpha_quantile:
+        if np.amin(null_pvalues) < alpha_quantile:
             n_falsepositives_fwer = n_falsepositives_fwer + 1
 
     # Calculate the false positive rate over all iterations
@@ -308,9 +363,9 @@ def perm_contrasts(lat_data, design, contrast_vector, n_bootstraps = 100, templa
 
   Examples
   -----------------
-dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
-X = pr.group_design(categ); c = np.array([1,-1,0]); lat_data = pr.wfield(dim,N)
-minP, orig_pvalues, pivotal_stats = pr.perm_contrasts(lat_data, X, c)
+  dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
+  X = pr.group_design(categ); c = np.array([1,-1,0]); lat_data = pr.wfield(dim,N)
+  minP, orig_pvalues, pivotal_stats = pr.perm_contrasts(lat_data, X, c)
     """
     # Convert the data to be a field if it is not one already
     if isinstance(lat_data, np.ndarray):

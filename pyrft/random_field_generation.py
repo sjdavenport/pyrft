@@ -126,7 +126,6 @@ def statnoise(mask, nsubj, fwhm, truncation = 1, scale_var = 1):
     sigma = pr.fwhm2sigma(fwhm)
 
     # Generate normal random noise
-    print(fieldsize)
     data = np.random.randn(*fieldsize)
 
     for n in np.arange(nsubj):
@@ -146,7 +145,10 @@ def statnoise(mask, nsubj, fwhm, truncation = 1, scale_var = 1):
         if use1d:
             data = data/np.mean(np.std(data, 1, ddof = 1))
         else:
+            #print(np.mean(np.std(data, 1, ddof = 1)))
             data = data/np.mean(np.std(data, len(masksize), ddof = 1))
+    
+    #print(np.mean(gaussian_filter(np.ones(fieldsize), sigma = sigma)))
     
     # Combine the data and the mask to make a field
     out = pr.Field(data, mask)
