@@ -104,8 +104,8 @@ def t_ref(template = 'linear'):
     t_func, t_inv = t_ref('beta')
     """
     if template == 'linear' or template == 'simes':
-        t_func = ss.t_linear
-        t_inv = ss.t_inv_linear
+        t_func = ss.linear_template
+        t_inv = ss.inverse_linear_template
     elif template == 'beta' or template == 'b':
         t_func = pr.t_beta
         t_inv = pr.t_inv_beta

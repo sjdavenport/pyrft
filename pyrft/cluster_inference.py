@@ -130,7 +130,7 @@ def cluster_tdp(data, design, contrast_matrix, mask, n_bootstraps = 100, alpha =
     n_vox_in_mask = np.sum(data.mask[:])
 
     # Gives t_k^L(lambda) = lambda*k/m for k = 1, ..., m
-    thr = sa.t_linear(lambda_quant, np.arange(1,n_vox_in_mask+1), n_vox_in_mask)
+    thr = sa.linear_template(lambda_quant, n_vox_in_mask, n_vox_in_mask)
 
     ### Calculate the TDP within each cluster
 
@@ -174,7 +174,7 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
     design
     contrast_matrix
     savedir
-  
+
     Returns
     ---------------------
     cluster_image:    a numpy.nd array,
@@ -231,7 +231,7 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
     n_vox_in_mask = np.sum(mask[:])
 
     # Gives t_k^L(lambda) = lambda*k/m for k = 1, ..., m
-    thr = sa.t_linear(lambda_quant, np.arange(1,n_vox_in_mask+1), n_vox_in_mask)
+    thr = sa.linear_template(lambda_quant, n_vox_in_mask, n_vox_in_mask)
 
     ### Calculate the TDP within each cluster
 
