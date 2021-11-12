@@ -230,6 +230,7 @@ def constrast_tstats_noerrorchecking(lat_data, design, contrast_matrix):
     n_contrasts = contrast_matrix.shape[0]  # constrasts
 
     # Calculate the number of parameters p and subjects N
+    design = np.array(design) # Ensure that the design matrix is an array
     nsubj = design.shape[0] # subjects
     n_params = design.shape[1] # parameters
 

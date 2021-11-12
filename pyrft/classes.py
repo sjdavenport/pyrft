@@ -28,11 +28,13 @@ class Field:
     mask = np.ones((100, 1), dtype=bool)
     exField = pr.Field(field, mask)
     print(exField)
+    
     # 2D
     field = np.random.randn(100, 100, 30)
     mask = np.ones((100, 100), dtype=bool)
     exField = pr.Field(field, mask)
     print(exField)
+    
     # 2D no subjects
     field = np.random.randn(100, 100)
     mask = np.ones((100, 100), dtype=bool)

@@ -3,6 +3,7 @@ Functions to run permutation methods
 """
 import pyrft as pr
 import numpy as np
+import sanssouci as sa
 from sklearn.utils import check_random_state
 from scipy.stats import t
 
@@ -224,7 +225,7 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
 
     # Obtain the inverse template function (allowing for direct input as well!)
     if isinstance(template, str):
-        _, t_inv = pr.t_ref(template)
+        t_func, t_inv = pr.t_ref(template)
     else:
         # Allow the inverse function to be an input
         t_inv = template
@@ -240,6 +241,7 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
     nvox = np.prod(dim)
     m = nvox*n_contrasts
     ntrue = int(np.round(pi0 * m))
+    nfalse = m - ntrue
     signal_entries = np.zeros(m)
     signal_entries[ntrue:] = 1
     
@@ -269,8 +271,8 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
             signal = pr.make_field(np.zeros((dim,n_contrasts)))
         else:
             signal = pr.make_field(np.zeros(dim + (n_contrasts,)))
+            
         if pi0 < 1:
-            rng = check_random_state(104)
             shuffle_idx = rng.choice(m, m, replace = False)
             shuffled_signal = signal_entries[shuffle_idx]
             spatial_signal2add = np.zeros(dim)
@@ -301,6 +303,7 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
         #for j in np.arange(n_contrasts):
         #    null_pvalues = np.append(null_pvalues, orig_pvalues.field[signal.field[..., j], j])
         
+        # Calculate the pivotal statistic on the original data
         extended_null_pvalues = np.ones(m)
         extended_null_pvalues[0:len(null_pvalues)] = null_pvalues
         extended_null_pvalues_tinv = t_inv(np.asmatrix(extended_null_pvalues))
@@ -318,6 +321,46 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
 
         if np.amin(null_pvalues) < alpha_quantile:
             n_falsepositives_fwer = n_falsepositives_fwer + 1
+            
+        if pi0 < 1:
+            # Computing the power
+            thr_boot = t_func(lambda_quant, np.arange(1, m + 1), m)
+            
+            # a) R = N_m
+            all_pvalues = np.ravel(orig_pvalues.field)
+            max_FP_bound = sa.max_fp(np.sort(all_pvalues), thr_boot)
+            min_TP_bound = m - max_FP_bound
+            power[0] += min_TP_bound/nfalse
+            
+            # b) R_b denotes the rejection set that considers the voxel-contrasts
+            # whose p-value is less than 0.05
+            
+            # Calculate the rejection set
+            R_b = orig_pvalues.field < 0.05
+            
+            # Calculate the number of rejection of non-null hypotheses
+            number_of_non_nulls = np.sum(R_b*signal.field > 0)
+            
+            # If there is at least 1 non-null rejection, record the TDP bound
+            if number_of_non_nulls > 0.5:
+                max_FP_bound_b = sa.max_fp(np.sort(np.ravel(orig_pvalues.field[R_b])), thr_boot)
+                min_TP_bound_b = m - max_FP_bound_b
+                power[1] += min_TP_bound_b/number_of_non_nulls
+
+            # c) BH rejection set
+            R_c, _, _ = pr.fdr_bh( all_pvalues, alpha = 0.05)
+            number_of_non_nulls = np.sum(R_c*np.ravel(signal.field) > 0)
+            R_c_pvalues = all_pvalues[R_c]
+            
+            # If there is at least 1 non-null rejection, record the TDP bound
+            if number_of_non_nulls > 0.5:
+                max_FP_bound_c = sa.max_fp(np.sort(R_c_pvalues), thr_boot)
+                min_TP_bound_c = m - max_FP_bound_c
+                power[2] += min_TP_bound_c/number_of_non_nulls
+    
+    # Calculate the power (when the data is non-null)
+    if pi0 < 1:
+        power = power/niters
 
     # Calculate the false positive rate over all iterations
     fpr_fwer = n_falsepositives_fwer/niters
