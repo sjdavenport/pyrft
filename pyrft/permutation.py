@@ -303,12 +303,7 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
         #null_pvalues = np.array([])
         #for j in np.arange(n_contrasts):
         #    null_pvalues = np.append(null_pvalues, orig_pvalues.field[signal.field[..., j], j])
-<<<<<<< HEAD
-        
         # Calculate the pivotal statistic on the original data
-=======
-
->>>>>>> ecd827deabef9463c230e3393ef410705ae1ab23
         extended_null_pvalues = np.ones(m)
         extended_null_pvalues[0:len(null_pvalues)] = null_pvalues
         extended_null_pvalues_tinv = t_inv(extended_null_pvalues, m, m)
