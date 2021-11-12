@@ -5,6 +5,7 @@ import pyrft as pr
 import numpy as np
 from sklearn.utils import check_random_state
 from scipy.stats import t
+import sanssouci as sa
 
 
 def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, template = 'linear', replace = True, store_boots = 0, display_progress = 0):
@@ -42,8 +43,8 @@ def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, templ
           over space) of the bth bootstrap. The 0th entry is the minimum p-value
           for the original data.
     orig_pvalues: an object of class field,
-          of size (dim, n_constrasts) giving the p-value (calculated across subjects) 
-          of each of the voxels across the different contrasts and 
+          of size (dim, n_constrasts) giving the p-value (calculated across subjects)
+          of each of the voxels across the different contrasts and
           with the same mask as the original data
     pivotal_stats: a numpy.ndarray of shape (1,B)
           whose bth entry is the pivotal statistic of the bth bootstrap,
@@ -107,7 +108,7 @@ def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, templ
     minp_perm[0] = orig_pvalues_sorted[0,0]
 
     # Obtain the pivotal statistic used for JER control
-    pivotal_stats[0] = np.amin(t_inv(orig_pvalues_sorted))
+    pivotal_stats[0] = sa.get_pivotal_stats(orig_pvalues_sorted, inverse_template=t_inv)
 
     # Initialize the boostrap storage!
     bootstore = 0
@@ -144,7 +145,7 @@ def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, templ
         minp_perm[b+1] = permuted_pvalues[0,0]
 
         #Obtain the pivotal statistic - of the permuted data - needed for JER control
-        pivotal_stats[b + 1] = np.amin(t_inv(permuted_pvalues))
+        pivotal_stats[b + 1] = sa.get_pivotal_stats(permuted_pvalues, inverse_template=t_inv)
         # could be adjusted for K not m or in general some set A! (i.e. in the step down process)
 
         if store_boots:
@@ -199,13 +200,13 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
     # 1D no signal
     dim = 5; nsubj = 30; C = np.array([[1,-1,0],[0,1,-1]]);
     FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C)
-    
+
     # 1D with signal
 
     # 2D
     dim = (10,10); nsubj = 30; C = np.array([[1,-1,0],[0,1,-1]]);
     FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C)
-    
+
     # 2D with signal
     dim = (25,25); nsubj = 100; C = np.array([[1,-1,0],[0,1,-1]]);
     FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C, 8, 0, 100, 1000, 0.8)
@@ -235,14 +236,14 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
     else:
         n_contrasts = contrast_matrix.shape[0]
         n_groups = contrast_matrix.shape[1]
-        
+
     # Initialize the true signal vector
     nvox = np.prod(dim)
     m = nvox*n_contrasts
     ntrue = int(np.round(pi0 * m))
     signal_entries = np.zeros(m)
     signal_entries[ntrue:] = 1
-    
+
     # Calculate the FPR
     for i in np.arange(niters):
         # Keep track of the progress.
@@ -262,7 +263,7 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
 
             # Generate the corresponding design matrix
             design_2use = pr.group_design(categ)
-            
+
         # Generate the signal by random shuffling the original signal
         # (if the proportion of signal is non-zero)
         if isinstance(dim, int):
@@ -283,7 +284,7 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
                 # Add the signal to the field
                 for k in np.arange(len(subjects_with_this_contrast)):
                     lat_data.field[..., subjects_with_this_contrast[k]] += spatial_signal2add
-                    
+
         # Convert the signal to boolean
         signal.field = signal.field == 0
         if useboot:
@@ -294,18 +295,18 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
 
         # Calculate the lambda alpha level quantile for JER control
         lambda_quant = np.quantile(pivotal_stats, alpha)
-        
-        # Calculate the null p-values 
+
+        # Calculate the null p-values
         null_pvalues = np.sort(orig_pvalues.field[signal.field])
         #null_pvalues = np.array([])
         #for j in np.arange(n_contrasts):
         #    null_pvalues = np.append(null_pvalues, orig_pvalues.field[signal.field[..., j], j])
-        
+
         extended_null_pvalues = np.ones(m)
         extended_null_pvalues[0:len(null_pvalues)] = null_pvalues
-        extended_null_pvalues_tinv = t_inv(np.asmatrix(extended_null_pvalues))
+        extended_null_pvalues_tinv = t_inv(extended_null_pvalues, m, m)
         null_pivotal_statistic = np.amin(extended_null_pvalues_tinv[0:len(null_pvalues)])
-        
+
         # Check whether there is a JER false rejection or not
         # Use pivotal_stats[0] since it corresponds to the original pivotal statistic
         # (i.e. not bootstrapped)
@@ -406,7 +407,7 @@ def perm_contrasts(lat_data, design, contrast_vector, n_bootstraps = 100, templa
     minp_perm[0] = orig_pvalues_sorted[0,0]
 
     # Obtain the pivotal statistics
-    pivotal_stats[0] = np.amin(t_inv(orig_pvalues_sorted))
+    pivotal_stats[0] = sa.get_pivotal_stats(orig_pvalues_sorted, inverse_template=t_inv)
 
     # Calculate permuted stats
     # note use the no error checking version so that the errors are not checked
@@ -422,6 +423,6 @@ def perm_contrasts(lat_data, design, contrast_vector, n_bootstraps = 100, templa
         minp_perm[b+1] = permuted_pvalues[0,0]
 
         # Get the pivotal statistics needed for JER control
-        pivotal_stats[b + 1] = np.amin(t_inv(permuted_pvalues))
+        pivotal_stats[b + 1] = sa.get_pivotal_stats(permuted_pvalues, inverse_template=t_inv)
 
     return minp_perm, orig_pvalues, pivotal_stats
