@@ -1,7 +1,7 @@
 """
 Additional functions for the sanssouci toolbox
 """
-import sanssouci as ss
+import sanssouci as sa
 from scipy.stats import beta
 import numpy as np
 import pyrft as pr
@@ -104,11 +104,11 @@ def t_ref(template = 'linear'):
     t_func, t_inv = t_ref('beta')
     """
     if template == 'linear' or template == 'simes':
-        t_func = ss.linear_template
-        t_inv = ss.inverse_linear_template
+        t_func = sa.linear_template
+        t_inv = sa.inverse_linear_template
     elif template == 'beta' or template == 'b':
-        t_func = pr.t_beta
-        t_inv = pr.t_inv_beta
+        t_func = sa.beta_template
+        t_inv = sa.inverse_beta_template
     else:
         raise Exception('The specified template is not available or has been incorrectly input')
 
