@@ -88,5 +88,3 @@ def test_perm_contrasts():
     assert pivotal_stats.shape == (B,)
     assert pivotal_stats.min() > 0
     assert pivotal_stats.max() < 1
-
-test_perm_contrasts()
