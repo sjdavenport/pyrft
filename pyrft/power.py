@@ -3,8 +3,12 @@ Functions to simulate and test when the null is not true everywhere
 """
 import pyrft as pr
 import numpy as np
+import sys
+sys.path.insert(0, 'C:\\Users\\12SDa\\davenpor\\davenpor\\Other_Toolboxes\\sanssouci.python')
 import sanssouci as sa
+from sanssouci.post_hoc_bounds import _compute_hommel_value
 from sklearn.utils import check_random_state
+from scipy.stats import norm
 
 def random_signal_locations(lat_data, categ, C, pi0, scale = 1, rng = check_random_state(101)):
     """ A function which generates random data with randomly located non-zero 
@@ -81,19 +85,37 @@ def random_signal_locations(lat_data, categ, C, pi0, scale = 1, rng = check_rand
     
     return lat_data, signal
 
-def bootpower(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 100, niters = 1000, pi0 = 1, alpha = 0.1, template = 'linear', replace = True, useboot = True):
+def bootpower(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 100, niters = 1000, pi0 = 1, simtype = 1, alpha = 0.1, template = 'linear', replace = True, ):
     """ bootpower generates non-null simulations and calculates the proportion
     of the true alternatives that are identified
 
     Parameters
     -----------------
-   
-
+    dim:
+    nsubj:
+    contrast_matrix:
+    fwhm:
+    design:
+    n_bootstraps:
+    niters:
+    pi0:
+    alpha:
+    template:
+    replace:
+    simtype:
+        
     Returns
     -----------------
     
     Examples
     -----------------
+    % Calculate the power using the bootstrap method
+    dim = (25,25); nsubj = 10; C = np.array([[1,-1,0],[0,1,-1]]);
+    power = pr.bootpower(dim, nsubj, C, 4, 0, 100, 1000, 0.8)
+    
+    % Calculate the power using ARI
+    dim = (25,25); nsubj = 10; C = np.array([[1,-1,0],[0,1,-1]]);
+    power = pr.bootpower(dim, nsubj, C, 4, 0, 100, 1000, 0.8, -1)
     """
     # Obtain ordered randomness
     rng = check_random_state(101)
@@ -156,82 +178,110 @@ def bootpower(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 
                     
         # Convert the signal to boolean
         signal.field = signal.field == 0
+
+        if simtype > -1:
+            # Run the bootstrap algorithm
+            if simtype == 1:
+                # Implement the bootstrap algorithm on the generated data
+                minp_perm, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, design_2use, contrast_matrix, n_bootstraps, t_inv, replace)
+            else:
+                pr.perm_contrasts(lat_data, design_2use, contrast_matrix, n_bootstraps, t_inv)
+                
+            # Calculate the lambda alpha level quantile for JER control
+            lambda_quant = np.quantile(pivotal_stats, alpha)
         
-        # Run the bootstrap algorithm
-        if useboot:
-            # Implement the bootstrap algorithm on the generated data
-            minp_perm, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, design_2use, contrast_matrix, n_bootstraps, t_inv, replace)
-        else:
-            pr.perm_contrasts(lat_data, design_2use, contrast_matrix, n_bootstraps, t_inv)
-
-        # Calculate the lambda alpha level quantile for JER control
-        lambda_quant = np.quantile(pivotal_stats, alpha)
-
         if pi0 < 1:
-            # Computing the power
-            thr_boot = t_func(lambda_quant, np.arange(1, m + 1), m)
-            
-            # a) R = N_m
-            all_pvalues = np.ravel(orig_pvalues.field)
-            max_FP_bound = sa.max_fp(np.sort(all_pvalues), thr_boot)
-            min_TP_bound = m - max_FP_bound
-            power[0] += min_TP_bound/nfalse
-            
-            # b) R_b denotes the rejection set that considers the voxel-contrasts
-            # whose p-value is less than 0.05
-            
-            # Calculate the rejection set
-            R_b = orig_pvalues.field < 0.05
-            
-            # Calculate the number of rejection of non-null hypotheses
-            number_of_non_nulls = np.sum(R_b*signal.field > 0)
-            
-            # If there is at least 1 non-null rejection, record the TDP bound
-            if number_of_non_nulls > 0.5:
-                max_FP_bound_b = sa.max_fp(np.sort(np.ravel(orig_pvalues.field[R_b])), thr_boot)
-                min_TP_bound_b = m - max_FP_bound_b
-                power[1] += min_TP_bound_b/number_of_non_nulls
+            # Calulate the template family
+            if simtype > -1:
+                tfamilyeval = t_func(lambda_quant, m, m)
+            else:
+                # Calculate the p-values
+                orig_tstats, _ = pr.constrast_tstats_noerrorchecking(lat_data, design_2use, contrast_matrix)
+                n_params = design_2use.shape[1]
+                orig_pvalues = pr.tstat2pval(orig_tstats, nsubj - n_params)
                 
-            # b) R_b denotes the rejection set that considers the voxel-contrasts
-            # whose p-value is less than 0.05
-            
-            # Calculate the rejection set
-            R_b = orig_pvalues.field < 0.1
-            
-            # Calculate the number of rejection of non-null hypotheses
-            number_of_non_nulls = np.sum(R_b*signal.field > 0)
-            
-            # If there is at least 1 non-null rejection, record the TDP bound
-            if number_of_non_nulls > 0.5:
-                max_FP_bound_b = sa.max_fp(np.sort(np.ravel(orig_pvalues.field[R_b])), thr_boot)
-                min_TP_bound_b = m - max_FP_bound_b
-                power[2] += min_TP_bound_b/number_of_non_nulls
-
-            # c) BH rejection set 0.05
-            R_c, _, _ = pr.fdr_bh( all_pvalues, alpha = 0.05)
-            number_of_non_nulls = np.sum(R_c*np.ravel(signal.field) > 0)
-            R_c_pvalues = all_pvalues[R_c]
-            
-            # If there is at least 1 non-null rejection, record the TDP bound
-            if number_of_non_nulls > 0.5:
-                max_FP_bound_c = sa.max_fp(np.sort(R_c_pvalues), thr_boot)
-                min_TP_bound_c = m - max_FP_bound_c
-                power[3] += min_TP_bound_c/number_of_non_nulls
+                if simtype == -1:
+                    # Run ARI
+                    # Calculate the zstats from the pvalues (need for input into _compute_hommel_value)
+                    zstats = norm.ppf(np.ravel(orig_pvalues.field))
+                    hommel = _compute_hommel_value(zstats, alpha)
+                    tfamilyeval = sa.linear_template(alpha, hommel, hommel)
+                elif simtype == -2:
+                    # Run Simes
+                    tfamilyeval = sa.linear_template(alpha, m, m)
                 
-            # c) BH rejection set 0.1
-            R_c, _, _ = pr.fdr_bh( all_pvalues, alpha = 0.1)
-            number_of_non_nulls = np.sum(R_c*np.ravel(signal.field) > 0)
-            R_c_pvalues = all_pvalues[R_c]
+            # Update the power calculation
+            power = pr.BNRpowercalculation_update(power, tfamilyeval, orig_pvalues, signal, m, nfalse);
             
-            # If there is at least 1 non-null rejection, record the TDP bound
-            if number_of_non_nulls > 0.5:
-                max_FP_bound_c = sa.max_fp(np.sort(R_c_pvalues), thr_boot)
-                min_TP_bound_c = m - max_FP_bound_c
-                power[4] += min_TP_bound_c/number_of_non_nulls
-    
-    # Calculate the power (when the data is non-null)
+    # Calculate the power (when the data is non-null) by averaging over all simulations
     if pi0 < 1:
         power = power/niters
 
     return power
+
+def BNRpowercalculation_update(power, thr, orig_pvalues, signal, m, nfalse):
+    # a) R = N_m
+    all_pvalues = np.ravel(orig_pvalues.field)
+    max_FP_bound = sa.max_fp(np.sort(all_pvalues), thr)
+    min_TP_bound = m - max_FP_bound
+    power[0] += min_TP_bound/nfalse
     
+    # b) R_b denotes the rejection set that considers the voxel-contrasts
+    # whose p-value is less than 0.05
+    
+    # Calculate the rejection set
+    R_b = orig_pvalues.field < 0.05
+    
+    # Calculate the number of rejections of non-null hypotheses
+    number_of_non_nulls = np.sum(R_b*signal.field > 0)
+    
+    # If there is at least 1 non-null rejection, record the TDP bound
+    if number_of_non_nulls > 0.5:
+        pval_set = np.sort(np.ravel(orig_pvalues.field[R_b]))
+        npcount = len(pval_set)
+        max_FP_bound_b = sa.max_fp(pval_set, thr)
+        min_TP_bound_b = npcount - max_FP_bound_b
+        power[1] += min_TP_bound_b/npcount
+        
+    # b) R_b denotes the rejection set that considers the voxel-contrasts
+    # whose p-value is less than 0.05
+    
+    # Calculate the rejection set
+    R_b = orig_pvalues.field < 0.1
+    
+    # Calculate the number of rejection of non-null hypotheses
+    number_of_non_nulls = np.sum(R_b*signal.field > 0)
+    
+    # If there is at least 1 non-null rejection, record the TDP bound
+    if number_of_non_nulls > 0.5:
+        pval_set = np.sort(np.ravel(orig_pvalues.field[R_b]))
+        npcount = len(pval_set)
+        max_FP_bound_b = sa.max_fp(pval_set, thr)
+        min_TP_bound_b = npcount - max_FP_bound_b
+        power[2] += min_TP_bound_b/npcount
+        
+    # c) BH rejection set 0.05
+    R_c, _, _ = pr.fdr_bh( all_pvalues, alpha = 0.05)
+    number_of_non_nulls = np.sum(R_c*np.ravel(signal.field) > 0)
+    
+    # If there is at least 1 non-null rejection, record the TDP bound
+    if number_of_non_nulls > 0.5:
+        R_c_pvalues = all_pvalues[R_c]
+        npcount = len(R_c_pvalues)
+        max_FP_bound_c = sa.max_fp(np.sort(R_c_pvalues), thr)
+        min_TP_bound_c = npcount - max_FP_bound_c
+        power[3] += min_TP_bound_c/npcount
+        
+    # c) BH rejection set 0.1
+    R_c, _, _ = pr.fdr_bh( all_pvalues, alpha = 0.1)
+    number_of_non_nulls = np.sum(R_c*np.ravel(signal.field) > 0)
+    
+    # If there is at least 1 non-null rejection, record the TDP bound
+    if number_of_non_nulls > 0.5:
+        R_c_pvalues = all_pvalues[R_c]
+        npcount = len(R_c_pvalues)
+        max_FP_bound_c = sa.max_fp(np.sort(R_c_pvalues), thr)
+        min_TP_bound_c = npcount - max_FP_bound_c
+        power[4] += min_TP_bound_c/npcount
+        
+    return power

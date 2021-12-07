@@ -377,12 +377,24 @@ def tstat2pval( tstats, df, one_sample = 0 ):
     Examples
     ------------------
     zvals = np.random.randn(1, 10000)
-    pvals = tstat2pval( zvals[0], 1000, one_sample = 0 )
+    pvals = pr.tstat2pval( zvals[0], 1000, one_sample = 0 )
     plt.hist(pvals)
+    
+    whitenoise = pr.wfield((10,10), 2)
+    pvals = tstat2pval( whitenoise, 1000)
+    plt.hist(np.ravel(pvals.field))
     """
     if one_sample == 0:
-        pvalues = 2 * (1 - t.cdf(abs(tstats), df))
+        if isinstance(tstats, pr.classes.Field):
+            pvalues = tstats
+            pvalues.field = 2 * (1 - t.cdf(abs(tstats.field), df))
+        else:
+            pvalues = 2 * (1 - t.cdf(abs(tstats), df))
     else:
-        pvalues = 1 - t.cdf(tstats, df)
+        if isinstance(tstats, pr.classes.Field):
+            pvalues = tstats
+            pvalues.field =  pvalues = 1 - t.cdf(tstats.field, df)
+        else:
+            pvalues = 1 - t.cdf(tstats, df)
 
     return pvalues
