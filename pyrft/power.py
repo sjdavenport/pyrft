@@ -6,7 +6,6 @@ import numpy as np
 import sys
 sys.path.insert(0, 'C:\\Users\\12SDa\\davenpor\\davenpor\\Other_Toolboxes\\sanssouci.python')
 import sanssouci as sa
-from sanssouci.post_hoc_bounds import _compute_hommel_value
 from sklearn.utils import check_random_state
 from scipy.stats import norm
 
@@ -204,7 +203,7 @@ def bootpower(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 
                     # Run ARI
                     # Calculate the zstats from the pvalues (need for input into _compute_hommel_value)
                     zstats = norm.ppf(np.ravel(orig_pvalues.field))
-                    hommel = _compute_hommel_value(zstats, alpha)
+                    hommel = pr.compute_hommel_value(zstats, alpha)
                     tfamilyeval = sa.linear_template(alpha, hommel, hommel)
                 elif simtype == -2:
                     # Run Simes
@@ -285,3 +284,22 @@ def BNRpowercalculation_update(power, thr, orig_pvalues, signal, m, nfalse):
         power[4] += min_TP_bound_c/npcount
         
     return power
+
+def compute_hommel_value(z_vals, alpha):
+    """Compute the All-Resolution Inference hommel-value
+    Function taken from nilearn.glm
+    """
+    if alpha < 0 or alpha > 1:
+        raise ValueError('alpha should be between 0 and 1')
+    z_vals_ = - np.sort(- z_vals)
+    p_vals = norm.sf(z_vals_)
+    n_tests = len(p_vals)
+
+    if len(p_vals) == 1:
+        return p_vals[0] > alpha
+    if p_vals[0] > alpha:
+        return n_tests
+    slopes = (alpha - p_vals[: - 1]) / np.arange(n_tests, 1, -1)
+    slope = np.max(slopes)
+    hommel_value = np.trunc(n_tests + (alpha - slope * n_tests) / slope)
+    return np.minimum(hommel_value, n_tests)
