@@ -142,7 +142,7 @@ def contrast_tstats(lat_data, design, contrast_matrix, check_error = 1):
         lat_data = pr.make_field(lat_data)
 
     # Having now run error checking calculate the contrast t-statistics
-    tstat_field, residuals = constrast_tstats_noerrorchecking(lat_data, design, contrast_matrix)
+    tstat_field, residuals, _ = constrast_tstats_noerrorchecking(lat_data, design, contrast_matrix)
 
     return tstat_field, residuals
 
@@ -257,9 +257,11 @@ def constrast_tstats_noerrorchecking(lat_data, design, contrast_matrix):
 
     # Compute the t-statistics
     if lat_data.D == 1:
-        tstats = (contrast_matrix @ betahat).reshape((lat_data.masksize[1],n_contrasts))/std_est
+        Cbeta = (contrast_matrix @ betahat).reshape((lat_data.masksize[1],n_contrasts))
+        tstats = Cbeta/std_est
     else:
-        tstats = (contrast_matrix @ betahat).reshape(lat_data.masksize + (n_contrasts,))/std_est
+        Cbeta = (contrast_matrix @ betahat).reshape(lat_data.masksize + (n_contrasts,))
+        tstats = Cbeta/std_est
 
     # Scale by the scaling constants to ensure var 1
     for l in np.arange(n_contrasts):
@@ -268,11 +270,12 @@ def constrast_tstats_noerrorchecking(lat_data, design, contrast_matrix):
 
     # Generate the field of tstats
     tstat_field = pr.Field(tstats, lat_data.mask)
+    Cbeta_field = pr.Field(Cbeta, lat_data.mask)
 
     # Reshape the residuals back to get rid of the trailing dimension
     residuals = residuals.reshape(lat_data.fieldsize)
 
-    return tstat_field, residuals
+    return tstat_field, residuals, Cbeta_field
 
 
 def fwhm2sigma(fwhm):
@@ -393,7 +396,7 @@ def tstat2pval( tstats, df, one_sample = 0 ):
     else:
         if isinstance(tstats, pr.classes.Field):
             pvalues = tstats
-            pvalues.field =  pvalues = 1 - t.cdf(tstats.field, df)
+            pvalues.field = 1 - t.cdf(tstats.field, df)
         else:
             pvalues = 1 - t.cdf(tstats, df)
 

@@ -173,7 +173,7 @@ def bootpower(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 
             design_2use = pr.group_design(categ)
         
         # Add random signal to the data
-        lat_data, signal = random_signal_locations(lat_data, categ, contrast_matrix, pi0, rng = rng)
+        lat_data, signal = pr.random_signal_locations(lat_data, categ, contrast_matrix, pi0, rng = rng)
                     
         # Convert the signal to boolean
         signal.field = signal.field == 0
@@ -189,6 +189,7 @@ def bootpower(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 
             # Calculate the lambda alpha level quantile for JER control
             lambda_quant = np.quantile(pivotal_stats, alpha)
         
+        # Only run this is pi0 < 1 as if it equals 1 then the power is zero
         if pi0 < 1:
             # Calulate the template family
             if simtype > -1:
@@ -201,9 +202,7 @@ def bootpower(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 
                 
                 if simtype == -1:
                     # Run ARI
-                    # Calculate the zstats from the pvalues (need for input into _compute_hommel_value)
-                    zstats = norm.ppf(np.ravel(orig_pvalues.field))
-                    hommel = pr.compute_hommel_value(zstats, alpha)
+                    hommel = pr.compute_hommel_value(np.ravel(orig_pvalues.field), alpha)
                     tfamilyeval = sa.linear_template(alpha, hommel, hommel)
                 elif simtype == -2:
                     # Run Simes
@@ -285,14 +284,13 @@ def BNRpowercalculation_update(power, thr, orig_pvalues, signal, m, nfalse):
         
     return power
 
-def compute_hommel_value(z_vals, alpha):
+def compute_hommel_value(p_vals, alpha):
     """Compute the All-Resolution Inference hommel-value
     Function taken from nilearn.glm
     """
     if alpha < 0 or alpha > 1:
         raise ValueError('alpha should be between 0 and 1')
-    z_vals_ = - np.sort(- z_vals)
-    p_vals = norm.sf(z_vals_)
+    p_vals = np.sort(p_vals)
     n_tests = len(p_vals)
 
     if len(p_vals) == 1:

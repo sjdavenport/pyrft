@@ -6,8 +6,6 @@ import numpy as np
 import sanssouci as sa
 from sklearn.utils import check_random_state
 from scipy.stats import t
-import sanssouci as sa
-
 
 def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, template = 'linear', replace = True, store_boots = 0, display_progress = 0):
     """ A function to compute the voxelwise t-statistics for a set of contrasts
@@ -154,7 +152,7 @@ def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, templ
 
     return [minp_perm, orig_pvalues, pivotal_stats, bootstore]
 
-def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 100, niters = 1000, pi0 = 1, alpha = 0.1, template = 'linear', replace = True, useboot = True):
+def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 100, niters = 1000, pi0 = 1, simtype = True, alpha = 0.1, template = 'linear', replace = True):
     """ A function which calculates FWER and JER error rates using niters iterations
 
     Parameters
@@ -242,7 +240,6 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
     nvox = np.prod(dim)
     m = nvox*n_contrasts
     ntrue = int(np.round(pi0 * m))
-    nfalse = m - ntrue
     signal_entries = np.zeros(m)
     signal_entries[ntrue:] = 1
 
@@ -266,47 +263,52 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
             # Generate the corresponding design matrix
             design_2use = pr.group_design(categ)
 
-        # Generate the signal by random shuffling the original signal
-        # (if the proportion of signal is non-zero)
-        if isinstance(dim, int):
-            signal = pr.make_field(np.zeros((dim,n_contrasts)))
-        else:
-            signal = pr.make_field(np.zeros(dim + (n_contrasts,)))
-            
-        if pi0 < 1:
-            shuffle_idx = rng.choice(m, m, replace = False)
-            shuffled_signal = signal_entries[shuffle_idx]
-            spatial_signal2add = np.zeros(dim)
-            for j in np.arange(n_contrasts):
-                contrast_signal = shuffled_signal[j*nvox:(j+1)*nvox]
-                signal.field[..., j] = contrast_signal.reshape(dim)
-                spatial_signal2add += signal.field[..., j]
-                subjects_with_this_contrast = np.where(categ==(j+1))[0]
-
-                # Add the signal to the field
-                for k in np.arange(len(subjects_with_this_contrast)):
-                    lat_data.field[..., subjects_with_this_contrast[k]] += spatial_signal2add
+        # Add random signal to the data
+        lat_data, signal = pr.random_signal_locations(lat_data, categ, contrast_matrix, pi0, rng = rng)
 
         # Convert the signal to boolean
         signal.field = signal.field == 0
-        if useboot:
+        
+        # Estimate the number of null hypotheses as m (unless using ARI or stepdown!)
+        mestimate = m
+        
+        # Run the bootstrap/ARI/Simes
+        if simtype == 1:
             # Implement the bootstrap algorithm on the generated data
             minp_perm, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, design_2use, contrast_matrix, n_bootstraps, t_inv, replace)
-        else:
+            
+            # Calculate the alpha quantile of the permutation distribution of 
+            # the minimum needed for FWER control
+            alpha_quantile = np.quantile(minp_perm, alpha)
+        elif simtype == 0:
+            # NOT YET READY
             perm_contrasts(lat_data, design_2use, contrast_matrix, n_bootstraps, t_inv)
+        else:
+            # Calculate the p-values
+            orig_tstats, _ = pr.constrast_tstats_noerrorchecking(lat_data, design_2use, contrast_matrix)
+            n_params = design_2use.shape[1]
+            orig_pvalues = pr.tstat2pval(orig_tstats, nsubj - n_params)
+            
+            lambda_quant = alpha
+            
+            # If using ARI calculate the estimate of the number of null hypotheses
+            if simtype == -1:
+                # Run ARI
+                mestimate = pr.compute_hommel_value(np.ravel(orig_pvalues.field), alpha)
+              
+            # Calculate the alpha quantile for FWER control
+            alpha_quantile = alpha/mestimate
 
         # Calculate the lambda alpha level quantile for JER control
         lambda_quant = np.quantile(pivotal_stats, alpha)
 
         # Calculate the null p-values
         null_pvalues = np.sort(orig_pvalues.field[signal.field])
-        #null_pvalues = np.array([])
-        #for j in np.arange(n_contrasts):
-        #    null_pvalues = np.append(null_pvalues, orig_pvalues.field[signal.field[..., j], j])
+        
         # Calculate the pivotal statistic on the original data
         extended_null_pvalues = np.ones(m)
         extended_null_pvalues[0:len(null_pvalues)] = null_pvalues
-        extended_null_pvalues_tinv = t_inv(extended_null_pvalues, m, m)
+        extended_null_pvalues_tinv = t_inv(extended_null_pvalues, mestimate, mestimate)
         null_pivotal_statistic = np.amin(extended_null_pvalues_tinv[0:len(null_pvalues)])
 
         # Check whether there is a JER false rejection or not
@@ -316,51 +318,8 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
         if null_pivotal_statistic < lambda_quant:
             n_falsepositives_jer = n_falsepositives_jer + 1
 
-        # Calculate the alpha quantile of the permutation distribution of the minimum
-        alpha_quantile = np.quantile(minp_perm, alpha)
-
         if np.amin(null_pvalues) < alpha_quantile:
             n_falsepositives_fwer = n_falsepositives_fwer + 1
-            
-        if pi0 < 1:
-            # Computing the power
-            thr_boot = t_func(lambda_quant, np.arange(1, m + 1), m)
-            
-            # a) R = N_m
-            all_pvalues = np.ravel(orig_pvalues.field)
-            max_FP_bound = sa.max_fp(np.sort(all_pvalues), thr_boot)
-            min_TP_bound = m - max_FP_bound
-            power[0] += min_TP_bound/nfalse
-            
-            # b) R_b denotes the rejection set that considers the voxel-contrasts
-            # whose p-value is less than 0.05
-            
-            # Calculate the rejection set
-            R_b = orig_pvalues.field < 0.05
-            
-            # Calculate the number of rejection of non-null hypotheses
-            number_of_non_nulls = np.sum(R_b*signal.field > 0)
-            
-            # If there is at least 1 non-null rejection, record the TDP bound
-            if number_of_non_nulls > 0.5:
-                max_FP_bound_b = sa.max_fp(np.sort(np.ravel(orig_pvalues.field[R_b])), thr_boot)
-                min_TP_bound_b = m - max_FP_bound_b
-                power[1] += min_TP_bound_b/number_of_non_nulls
-
-            # c) BH rejection set
-            R_c, _, _ = pr.fdr_bh( all_pvalues, alpha = 0.05)
-            number_of_non_nulls = np.sum(R_c*np.ravel(signal.field) > 0)
-            R_c_pvalues = all_pvalues[R_c]
-            
-            # If there is at least 1 non-null rejection, record the TDP bound
-            if number_of_non_nulls > 0.5:
-                max_FP_bound_c = sa.max_fp(np.sort(R_c_pvalues), thr_boot)
-                min_TP_bound_c = m - max_FP_bound_c
-                power[2] += min_TP_bound_c/number_of_non_nulls
-    
-    # Calculate the power (when the data is non-null)
-    if pi0 < 1:
-        power = power/niters
 
     # Calculate the false positive rate over all iterations
     fpr_fwer = n_falsepositives_fwer/niters
