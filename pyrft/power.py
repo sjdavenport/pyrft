@@ -7,7 +7,6 @@ import sys
 sys.path.insert(0, 'C:\\Users\\12SDa\\davenpor\\davenpor\\Other_Toolboxes\\sanssouci.python')
 import sanssouci as sa
 from sklearn.utils import check_random_state
-from scipy.stats import norm
 
 def random_signal_locations(lat_data, categ, C, pi0, scale = 1, rng = check_random_state(101)):
     """ A function which generates random data with randomly located non-zero 
@@ -284,9 +283,115 @@ def BNRpowercalculation_update(power, thr, orig_pvalues, signal, m, nfalse):
         
     return power
 
+def simes_hommel_value(pvalues, alpha):
+    """ simes_hommel_value computes the hommel value that arises from using
+    the simes reference family at a level alpha given a set of p-values.
+
+    Parameters
+    -----------------
+    pvalues: np.ndarray,
+        giving the pvalues (each of which is greater than or equal to 0 and 
+        less than or equal to 1)
+    alpha: double,
+        the level at which to control the error rate
+        
+    Returns
+    -----------------
+    hommel_value: int,
+        the estimated hommel value
+    
+    Examples
+    -----------------
+    ## Example 1 (from Meijer 2018's Figure 1)
+    
+    pvalues = np.array((0, 0.01, 0.08, 0.1, 0.5, 0.7, 0.9))
+    alpha = 0.4
+    # Calculate the hommel value
+    h = pr.simes_hommel_value(pvalues, alpha)
+    
+    # Plot the p-values and the critical slope
+    sorted_pvalues = np.sort(pvalues)
+    m = len(pvalues)
+    plt.plot(np.arange(m)+1, sorted_pvalues, '*')
+    critical_slope = (alpha - sorted_pvalues[m-h-1])/h
+    xvals = np.arange(1, m+1)
+    plt.plot(xvals, critical_slope*xvals + alpha - critical_slope*m)
+    plt.ylim((0,1))
+    print(h)
+    
+    ## Example 2 (used in the help for the hommel function in the hommel R package)
+    pvalues = np.array((0.011432579, 0.009857651, 0.015673905, 0.010806814,
+        0.001760031, 0.420629970, 0.976332934, 0.330314999, 0.892229400, 0.417906924))
+    # Calculate the hommel value
+    h = pr.simes_hommel_value(pvalues, 0.05)
+    
+    # Plot the p-values and the critical slope
+    sorted_pvalues = np.sort(pvalues)
+    m = len(pvalues)
+    plt.plot(np.arange(m)+1, sorted_pvalues, '*')
+    critical_slope = (alpha - sorted_pvalues[m-h-1])/h
+    xvals = np.arange(1, m+1)
+    plt.plot(xvals, critical_slope*xvals + alpha - critical_slope*m)
+    plt.ylim((0,1))
+    print(h)
+    """
+    # Ensure that 0 < alpha < 1
+    if alpha < 0 or alpha > 1:
+        raise ValueError('alpha should be between 0 and 1')
+        
+    # Sort the pvalues
+    pvalues = np.sort(pvalues)
+    
+    # Compute the number of hypotheses
+    n_tests = len(pvalues)
+
+    # If there is only one p-value p, the hommel value is 1 if p < alpha and 0 
+    # otherwise.
+    if len(pvalues) == 1:
+        return pvalues[0] > alpha
+    
+    # If the smallest p-value is greater than alpha, return the number of tests
+    # as the hommel value.
+    if pvalues[0] > alpha:
+        return n_tests
+    
+    if np.max(pvalues) < alpha:
+        return 0
+    
+    # Compute the slopes between the points (i, p_i) and (n_tests, alpha)
+    # note that the largest p-value is excluded because it would yield a slope
+    # -infinity. This calculates (alpha - p_i)/(m - i) for i = 1, \dots, m-1.
+    slopes = (alpha - pvalues[: - 1]) / np.arange(n_tests, 1, -1)
+    
+    # Find the index of the maximum slope (adding 1 to account for python indexing)
+    slopes_argsort = np.argsort(slopes)
+    max_slope_idx = slopes_argsort[n_tests-2] + 1
+    
+    # Compute the hommel value from this
+    hommel_value = n_tests - (max_slope_idx)
+    
+    return hommel_value
+
+
 def compute_hommel_value(p_vals, alpha):
     """Compute the All-Resolution Inference hommel-value
-    Function taken from nilearn.glm
+    Function taken from nilearn. This function provides the incorrect hommel 
+    value and is deprecated.
+    
+    Examples
+    ----------------
+    pvalues = np.array((0, 0.01, 0.08, 0.1, 0.5, 0.7, 0.9))
+    m = len(pvalues)
+    h = pr.compute_hommel_value(pvalues, 0.1)
+    plt.plot(np.arange(m)+1, np.sort(pvalues), '*')
+    print(h)
+    
+    pvalues = np.array((0.011432579, 0.009857651, 0.015673905, 0.010806814,
+        0.001760031, 0.420629970, 0.976332934, 0.330314999, 0.892229400, 0.417906924))
+    m = len(pvalues)
+    h = pr.compute_hommel_value(pvalues, 0.1)
+    plt.plot(np.arange(m)+1, np.sort(pvalues), '*')
+    print(h)
     """
     if alpha < 0 or alpha > 1:
         raise ValueError('alpha should be between 0 and 1')
