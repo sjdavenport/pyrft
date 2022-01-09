@@ -142,7 +142,7 @@ def contrast_tstats(lat_data, design, contrast_matrix, check_error = 1):
         lat_data = pr.make_field(lat_data)
 
     # Having now run error checking calculate the contrast t-statistics
-    tstat_field, residuals, _ = constrast_tstats_noerrorchecking(lat_data, design, contrast_matrix)
+    tstat_field, residuals, _ = contrast_tstats_noerrorchecking(lat_data, design, contrast_matrix)
 
     return tstat_field, residuals
 
@@ -182,7 +182,7 @@ def contrast_error_checking(lat_data,design,contrast_matrix):
     return contrast_matrix, nsubj, n_params
 
 
-def constrast_tstats_noerrorchecking(lat_data, design, contrast_matrix):
+def contrast_tstats_noerrorchecking(lat_data, design, contrast_matrix):
     """ A function to compute the voxelwise t-statistics for a set of contrasts
     but with no error checking! For input into permutation so you do not have to
     run the error checking every time.

@@ -91,7 +91,7 @@ def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, templ
     minp_perm = np.zeros(n_bootstraps)
 
     # Calculate the original statistic (used a the first permutation)
-    orig_tstats, residuals = pr.constrast_tstats_noerrorchecking(lat_data, design, contrast_matrix)
+    orig_tstats, residuals, _ = pr.contrast_tstats_noerrorchecking(lat_data, design, contrast_matrix)
 
     # Initialize the p-value field
     orig_pvalues = orig_tstats
@@ -133,7 +133,7 @@ def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, templ
         # Obtain a sample with replacement
         shuffle_idx = rng.choice(nsubj, nsubj, replace = replace)
         lat_data_perm.field = residuals[...,shuffle_idx]
-        permuted_tstats, _ = pr.constrast_tstats_noerrorchecking(lat_data_perm, design, contrast_matrix)
+        permuted_tstats, _ = pr.contrast_tstats_noerrorchecking(lat_data_perm, design, contrast_matrix)
 
         # Compute the permuted p-values
         # (using abs and multiplying by 2 to obtain the two-sided p-values)
@@ -285,7 +285,7 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
             perm_contrasts(lat_data, design_2use, contrast_matrix, n_bootstraps, t_inv)
         else:
             # Calculate the p-values
-            orig_tstats, _ = pr.constrast_tstats_noerrorchecking(lat_data, design_2use, contrast_matrix)
+            orig_tstats, _ = pr.contrast_tstats_noerrorchecking(lat_data, design_2use, contrast_matrix)
             n_params = design_2use.shape[1]
             orig_pvalues = pr.tstat2pval(orig_tstats, nsubj - n_params)
             
@@ -397,7 +397,7 @@ def perm_contrasts(lat_data, design, contrast_vector, n_bootstraps = 100, templa
     pivotal_stats = np.zeros(n_bootstraps)
 
     # Calculate the original statistic (used a the first permutation)
-    orig_tstats, _ = pr.constrast_tstats_noerrorchecking(lat_data, design, contrast_vector)
+    orig_tstats, _ = pr.contrast_tstats_noerrorchecking(lat_data, design, contrast_vector)
     orig_pvalues = orig_tstats
     orig_pvalues.field =  2*(1 - t.cdf(abs(orig_tstats.field), nsubj-n_params))
 
@@ -416,7 +416,7 @@ def perm_contrasts(lat_data, design, contrast_vector, n_bootstraps = 100, templa
     for b in np.arange(n_bootstraps - 1):
         print(b)
         shuffle_idx = rng.permutation(nsubj)
-        permuted_tstats, _ = pr.constrast_tstats_noerrorchecking(lat_data, design[shuffle_idx, :], contrast_vector)
+        permuted_tstats, _, _ = pr.contrast_tstats_noerrorchecking(lat_data, design[shuffle_idx, :], contrast_vector)
         permuted_pvalues = 2*(1 - t.cdf(abs(permuted_tstats.field), nsubj-n_params))
         permuted_pvalues = np.array([np.sort(np.ravel(permuted_pvalues))])
 
