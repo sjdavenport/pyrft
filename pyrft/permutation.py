@@ -294,7 +294,7 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
             # If using ARI calculate the estimate of the number of null hypotheses
             if simtype == -1:
                 # Run ARI
-                mestimate = pr.simes_hommel_value(np.ravel(orig_pvalues.field), alpha)
+                mestimate = pr.compute_hommel_value(np.ravel(orig_pvalues.field), alpha)
               
             # Calculate the alpha quantile for FWER control
             alpha_quantile = alpha/mestimate

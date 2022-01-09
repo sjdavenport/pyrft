@@ -375,8 +375,7 @@ def simes_hommel_value(pvalues, alpha):
 
 def compute_hommel_value(p_vals, alpha):
     """Compute the All-Resolution Inference hommel-value
-    Function taken from nilearn. This function provides the incorrect hommel 
-    value and is deprecated.
+    Function taken from nilearn.
     
     Examples
     ----------------
@@ -402,7 +401,7 @@ def compute_hommel_value(p_vals, alpha):
         return p_vals[0] > alpha
     if p_vals[0] > alpha:
         return n_tests
-    slopes = (alpha - p_vals[: - 1]) / np.arange(n_tests, 1, -1)
+    slopes = (alpha - p_vals[: - 1]) / np.arange(n_tests -1, 0, -1)
     slope = np.max(slopes)
-    hommel_value = np.trunc(n_tests + (alpha - slope * n_tests) / slope)
+    hommel_value = np.trunc(alpha / slope)
     return np.minimum(hommel_value, n_tests)
