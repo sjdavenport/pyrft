@@ -285,7 +285,7 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
             perm_contrasts(lat_data, design_2use, contrast_matrix, n_bootstraps, t_inv)
         else:
             # Calculate the p-values
-            orig_tstats, _ = pr.contrast_tstats_noerrorchecking(lat_data, design_2use, contrast_matrix)
+            orig_tstats, _, _ = pr.contrast_tstats_noerrorchecking(lat_data, design_2use, contrast_matrix)
             n_params = design_2use.shape[1]
             orig_pvalues = pr.tstat2pval(orig_tstats, nsubj - n_params)
             
@@ -397,7 +397,7 @@ def perm_contrasts(lat_data, design, contrast_vector, n_bootstraps = 100, templa
     pivotal_stats = np.zeros(n_bootstraps)
 
     # Calculate the original statistic (used a the first permutation)
-    orig_tstats, _ = pr.contrast_tstats_noerrorchecking(lat_data, design, contrast_vector)
+    orig_tstats, _, _ = pr.contrast_tstats_noerrorchecking(lat_data, design, contrast_vector)
     orig_pvalues = orig_tstats
     orig_pvalues.field =  2*(1 - t.cdf(abs(orig_tstats.field), nsubj-n_params))
 
