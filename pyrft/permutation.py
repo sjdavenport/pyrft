@@ -133,7 +133,7 @@ def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, templ
         # Obtain a sample with replacement
         shuffle_idx = rng.choice(nsubj, nsubj, replace = replace)
         lat_data_perm.field = residuals[...,shuffle_idx]
-        permuted_tstats, _ = pr.contrast_tstats_noerrorchecking(lat_data_perm, design, contrast_matrix)
+        permuted_tstats, _, _ = pr.contrast_tstats_noerrorchecking(lat_data_perm, design, contrast_matrix)
 
         # Compute the permuted p-values
         # (using abs and multiplying by 2 to obtain the two-sided p-values)
