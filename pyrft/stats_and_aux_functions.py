@@ -340,7 +340,6 @@ def group_design(categ):
 
     return design
 
-
 def modul(iterand, niterand = 100):
     """ A function which allows you to easily check how a for loop is
     % progressing by displaying iterand iff it is evenly divided by niterand

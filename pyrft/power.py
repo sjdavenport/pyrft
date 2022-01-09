@@ -305,7 +305,7 @@ def simes_hommel_value(pvalues, alpha):
     ## Example 1 (from Meijer 2018's Figure 1)
     
     pvalues = np.array((0, 0.01, 0.08, 0.1, 0.5, 0.7, 0.9))
-    alpha = 0.4
+    alpha = 0.251
     # Calculate the hommel value
     h = pr.simes_hommel_value(pvalues, alpha)
     
@@ -361,7 +361,7 @@ def simes_hommel_value(pvalues, alpha):
     # Compute the slopes between the points (i, p_i) and (n_tests, alpha)
     # note that the largest p-value is excluded because it would yield a slope
     # -infinity. This calculates (alpha - p_i)/(m - i) for i = 1, \dots, m-1.
-    slopes = (alpha - pvalues[: - 1]) / np.arange(n_tests, 1, -1)
+    slopes = (alpha - pvalues[: - 1]) / np.arange(n_tests-1, 0, -1)
     
     # Find the index of the maximum slope (adding 1 to account for python indexing)
     slopes_argsort = np.argsort(slopes)
