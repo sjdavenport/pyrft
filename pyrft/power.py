@@ -195,7 +195,7 @@ def bootpower(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 
                 tfamilyeval = t_func(lambda_quant, m, m)
             else:
                 # Calculate the p-values
-                orig_tstats, _ = pr.constrast_tstats_noerrorchecking(lat_data, design_2use, contrast_matrix)
+                orig_tstats, _, _ = pr.contrast_tstats_noerrorchecking(lat_data, design_2use, contrast_matrix)
                 n_params = design_2use.shape[1]
                 orig_pvalues = pr.tstat2pval(orig_tstats, nsubj - n_params)
                 

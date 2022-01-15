@@ -280,6 +280,9 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
             # Calculate the alpha quantile of the permutation distribution of 
             # the minimum needed for FWER control
             alpha_quantile = np.quantile(minp_perm, alpha)
+            
+            # Calculate the lambda alpha level quantile for JER control
+            lambda_quant = np.quantile(pivotal_stats, alpha)
         elif simtype == 0:
             # NOT YET READY
             perm_contrasts(lat_data, design_2use, contrast_matrix, n_bootstraps, t_inv)
@@ -297,10 +300,8 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
                 mestimate = pr.compute_hommel_value(np.ravel(orig_pvalues.field), alpha)
               
             # Calculate the alpha quantile for FWER control
-            alpha_quantile = alpha/mestimate
-
-        # Calculate the lambda alpha level quantile for JER control
-        lambda_quant = np.quantile(pivotal_stats, alpha)
+            lambda_quant = lambda_quant/(mestimate/m)
+            alpha_quantile = alpha/(mestimate/m)
 
         # Calculate the null p-values
         null_pvalues = np.sort(orig_pvalues.field[signal.field])
