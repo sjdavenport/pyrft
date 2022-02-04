@@ -49,6 +49,13 @@ def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, templ
           whose bth entry is the pivotal statistic of the bth bootstrap,
           i.e. min_{1 <= k <= m} t_k^-1(p_{(k:m)}(T_{n,b}^*)). These quantities
           are needed for joint error rate control. (At the moment it takes K = m.)
+    bootstore:  np.ndarray,
+         of shape (B, m) where B is the number of bootstraps/permutations and m is
+        the number of hypotheses. This contains the permuted p-values from 
+        applying the bootstrap or permutation JER control methods (e.g. via 
+        pr.boot_contrasts). The first row of this matrix corresponds to the
+        original p-values, and the remainder to permuted p-values. As the first 
+        permutation is always taken to be the original data.
 
     Examples
     -----------------
@@ -76,7 +83,7 @@ def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, templ
 
     # Obtain the inverse template function (allowing for direct input as well!)
     if isinstance(template, str):
-        _, t_inv = pr.t_ref(template)
+        _, t_inv, _ = pr.t_ref(template)
     else:
         t_inv = template
 
@@ -101,7 +108,8 @@ def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, templ
     orig_pvalues.field = 2*(1 - t.cdf(abs(orig_tstats.field), nsubj-n_params))
 
     # Note need np.ravel as the size of orig_pvalues.field is (dim, L) i.e. it's not a vector!
-    orig_pvalues_sorted = np.array([np.sort(np.ravel(orig_pvalues.field))])
+    orig_pvalues_vec = np.ravel(orig_pvalues.field)
+    orig_pvalues_sorted = np.array([np.sort(orig_pvalues_vec)])
 
     # Get the minimum p-value over voxels and contrasts (include the orignal in the permutation set)
     minp_perm[0] = orig_pvalues_sorted[0,0]
@@ -109,16 +117,14 @@ def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, templ
     # Obtain the pivotal statistic used for JER control
     pivotal_stats[0] = sa.get_pivotal_stats(orig_pvalues_sorted, inverse_template=t_inv)
 
-    # Initialize the boostrap storage!
+    # Initialize the bootstrap storage!
     bootstore = 0
     if store_boots:
         # Calculate the number of contrasts
         n_contrasts = contrast_matrix.shape[0]
         masksize_product = np.prod(lat_data.masksize)
         bootstore = np.zeros((n_contrasts*masksize_product, n_bootstraps))
-        print(bootstore.shape)
-        print(orig_pvalues_sorted.shape)
-        bootstore[:,0] = orig_pvalues_sorted[0]
+        bootstore[:,0] = orig_pvalues_vec
 
     # Calculate permuted stats
     # note uses the no error checking version so that the errors are not checked
@@ -138,21 +144,26 @@ def boot_contrasts(lat_data, design, contrast_matrix, n_bootstraps = 1000, templ
         # Compute the permuted p-values
         # (using abs and multiplying by 2 to obtain the two-sided p-values)
         permuted_pvalues = 2*(1 - t.cdf(abs(permuted_tstats.field), nsubj-n_params))
-        permuted_pvalues = np.array([np.sort(np.ravel(permuted_pvalues))])
+        permuted_pvalues_vec = np.ravel(permuted_pvalues)
+        permuted_pvalues_sorted = np.array([np.sort(permuted_pvalues_vec)])
 
         #Get the minimum p-value of the permuted data (over voxels and contrasts)
-        minp_perm[b+1] = permuted_pvalues[0,0]
+        minp_perm[b+1] = permuted_pvalues_sorted[0,0]
 
         #Obtain the pivotal statistic - of the permuted data - needed for JER control
-        pivotal_stats[b + 1] = sa.get_pivotal_stats(permuted_pvalues, inverse_template=t_inv)
+        # i.e. min_{1 \leq k \leq K} t_k^(-1)(p_{(k:m)})
+        pivotal_stats[b + 1] = sa.get_pivotal_stats(permuted_pvalues_sorted, inverse_template=t_inv)
         # could be adjusted for K not m or in general some set A! (i.e. in the step down process)
 
         if store_boots:
-            bootstore[:,b+1] = permuted_pvalues[0]
+            bootstore[:,b+1] = permuted_pvalues_vec
 
+    # Transpose bootstore so that it is B by m
+    bootstore = np.transpose(bootstore)
+    
     return [minp_perm, orig_pvalues, pivotal_stats, bootstore]
 
-def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 100, niters = 1000, pi0 = 1, simtype = True, alpha = 0.1, template = 'linear', replace = True):
+def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 100, niters = 1000, pi0 = 1, simtype = 1, alpha = 0.1, template = 'linear', replace = True, do_sd = 1):
     """ A function which calculates FWER and JER error rates using niters iterations
 
     Parameters
@@ -161,24 +172,29 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
         giving the dimensions of the data to generate
     nsubj: int,
         giving the number of subjects to use
-    C: a numpy.ndarray of shape (L,p)
+    contrast_matrix: a numpy.ndarray of shape (L,p)
           corresponding to the contrast matrix, such that which each row is a
           contrast vector (where L is the number of constrasts)
-    design: a numpy.ndarray of size (N,p) or an int
+    fwhm: int,
+        giving the fwhm with which to smooth the data (default is 0 i.e. 
+        generatingwhite noise without smoothing)
+    design: a numpy.ndarray of size (N,p) or an int,
         giving the covariates (p being the number of parameters), if set to be
         an integer then random category vectors are generated for each iteration
         and a corresponding design matrix selected
-    fwhm: int,
-        giving the fwhm with which to smooth the data (default is 0 i.e. generating
-                                                white noise without smoothing)
     n_bootstraps: int,
         giving the number of bootstraps to do (default is 1000)
 
     niters: int,
       giving the number of iterations to use to estimate the FPR
+    pi0:  float,
+    simtype: int,
+        either -2, -1 or 1. -2 corresponds to Simes, -1 to ARI, 1 to the
+        bootstrap procedure. Default is 1 i.e. the bootstrap.
     alpha: int,
        the alpha level at which to control (default is 0.1)
-    t_inv: specifying the reference family (default is the linear reference family)
+    t_inv: char,
+        specifying the reference family (default is the linear reference family)
     replace:  Bool
         if True (default) then the residuals are sampled with replacement
         (i.e. a bootstrap), if False then they are sampled without replacement
@@ -186,6 +202,9 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
     useboot: Bool,
         determines whether to use bootstrapping to analyse the data or permutation,
         the default is True, i.e. to use bootstrapping
+    do_sd: bool,
+        detmerines whether to run the step down algorithm when doing the bootstrap
+        default is 1 i.e. to do so, this is ignored when running ARI or Simes
 
     Returns
     -----------------
@@ -202,9 +221,17 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
 
     # 1D with signal
 
-    # 2D
+    # 2D bootstrapping
     dim = (10,10); nsubj = 30; C = np.array([[1,-1,0],[0,1,-1]]);
     FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C)
+    
+    # 2D - Simes
+    dim = (10,10); nsubj = 30; C = np.array([[1,-1,0],[0,1,-1]]);
+    FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C, simtype = -2)
+
+    # 2D - ARI
+    dim = (10,10); nsubj = 30; C = np.array([[1,-1,0],[0,1,-1]]);
+    FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C, simtype = -1)
 
     # 2D with signal
     dim = (25,25); nsubj = 100; C = np.array([[1,-1,0],[0,1,-1]]);
@@ -213,6 +240,8 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
     # Initialize the FPR counter
     n_falsepositives_jer = 0 # jer stands for joint error rate here
     n_falsepositives_fwer = 0
+    n_falsepositives_fwer_sd = 0
+    n_falsepositives_jer_sd = 0
 
     # Obtain ordered randomness
     rng = check_random_state(101)
@@ -224,7 +253,7 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
 
     # Obtain the inverse template function (allowing for direct input as well!)
     if isinstance(template, str):
-        t_func, t_inv = pr.t_ref(template)
+        _, t_inv, t_inv_all = pr.t_ref(template)
     else:
         # Allow the inverse function to be an input
         t_inv = template
@@ -246,7 +275,7 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
     # Calculate the FPR
     for i in np.arange(niters):
         # Keep track of the progress.
-        pr.modul(i,1)
+        pr.modul(i,100)
 
         # Generate the data (i.e. generate stationary random fields)
         lat_data = pr.statnoise(dim,nsubj,fwhm)
@@ -275,7 +304,7 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
         # Run the bootstrap/ARI/Simes
         if simtype == 1:
             # Implement the bootstrap algorithm on the generated data
-            minp_perm, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, design_2use, contrast_matrix, n_bootstraps, t_inv, replace)
+            minp_perm, orig_pvalues, pivotal_stats, bootstore = pr.boot_contrasts(lat_data, design_2use, contrast_matrix, n_bootstraps, t_inv, replace, store_boots = do_sd)
             
             # Calculate the alpha quantile of the permutation distribution of 
             # the minimum needed for FWER control
@@ -283,6 +312,18 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
             
             # Calculate the lambda alpha level quantile for JER control
             lambda_quant = np.quantile(pivotal_stats, alpha)
+            
+            # Run step down (if specified)
+            if do_sd:
+                # Run JER step down (using the alpha quantile of the 
+                # minimum pivotal statistic to calculate a threshold)
+                lambda_quant_sd, _ = pr.step_down( bootstore, alpha = alpha, 
+                                              do_fwer = 0, template = template)
+                # Run FWER step down (using the minimum pvalue to calculate a 
+                # threshold)
+                alpha_quantile_sd, _ = pr.step_down( bootstore, alpha = alpha, 
+                                              do_fwer = 1, template = template)
+                
         elif simtype == 0:
             # NOT YET READY
             perm_contrasts(lat_data, design_2use, contrast_matrix, n_bootstraps, t_inv)
@@ -298,18 +339,18 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
             if simtype == -1:
                 # Run ARI
                 mestimate = pr.compute_hommel_value(np.ravel(orig_pvalues.field), alpha)
-              
+
             # Calculate the alpha quantile for FWER control
             lambda_quant = lambda_quant/(mestimate/m)
-            alpha_quantile = alpha/(mestimate/m)
-
+            alpha_quantile = alpha/mestimate
+        
         # Calculate the null p-values
         null_pvalues = np.sort(orig_pvalues.field[signal.field])
         
         # Calculate the pivotal statistic on the original data
         extended_null_pvalues = np.ones(m)
         extended_null_pvalues[0:len(null_pvalues)] = null_pvalues
-        extended_null_pvalues_tinv = t_inv(extended_null_pvalues, mestimate, mestimate)
+        extended_null_pvalues_tinv = t_inv_all(extended_null_pvalues, mestimate)
         null_pivotal_statistic = np.amin(extended_null_pvalues_tinv[0:len(null_pvalues)])
 
         # Check whether there is a JER false rejection or not
@@ -322,6 +363,19 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
         if np.amin(null_pvalues) < alpha_quantile:
             n_falsepositives_fwer = n_falsepositives_fwer + 1
 
+        # When doing ARI or Simes don't do the additional step down step
+        # Technically ARI is the step down of Simes but we treat them as
+        # separate methods since they run so quickly.
+        if simtype < 0:
+            do_sd = 0
+
+        if do_sd:
+            if null_pivotal_statistic < lambda_quant_sd:
+                n_falsepositives_jer_sd = n_falsepositives_jer_sd + 1
+
+            if np.amin(null_pvalues) < alpha_quantile_sd:
+                n_falsepositives_fwer_sd = n_falsepositives_fwer_sd + 1
+
     # Calculate the false positive rate over all iterations
     fpr_fwer = n_falsepositives_fwer/niters
 
@@ -333,12 +387,28 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
 
     # Calculate the standard error
     std_error_jer = 1.96*np.sqrt(fpr_jer*(1-fpr_jer)/niters)
-
+    
     # Print the results
     print('FWER: ', fpr_fwer, ' +/- ', round(std_error_fwer,4))
     print('JER: ', fpr_jer, ' +/- ', round(std_error_jer,4))
+    
+    if do_sd:
+        # Calculate the step down FWER
+        fpr_fwer_sd = n_falsepositives_fwer_sd/niters
+        std_error_fwer_sd = 1.96*np.sqrt(fpr_fwer_sd*(1-fpr_fwer_sd)/niters)
+        
+        # Calculate the step down JER
+        fpr_jer_sd = n_falsepositives_jer_sd/niters
+        std_error_jer_sd = 1.96*np.sqrt(fpr_jer_sd*(1-fpr_jer_sd)/niters)
 
-    return fpr_fwer, fpr_jer
+        # Print the results
+        print('FWER step down: ', fpr_fwer_sd, ' +/- ', round(std_error_fwer_sd,4))
+        print('JER step down: ', fpr_jer_sd, ' +/- ', round(std_error_jer_sd,4))
+    else:
+        fpr_jer_sd = -1
+        fpr_fwer_sd = -1
+
+    return fpr_fwer, fpr_jer, fpr_fwer_sd, fpr_jer_sd
 
 def perm_contrasts(lat_data, design, contrast_vector, n_bootstraps = 100, template = 'linear'):
     """ A function to compute the voxelwise t-statistics for a set of contrasts

@@ -40,11 +40,15 @@ def random_signal_locations(lat_data, categ, C, pi0, scale = 1, rng = check_rand
     n_groups = C.shape[1]
     rng = check_random_state(101)
     categ = rng.choice(n_groups, nsubj, replace = True)
-    f = random_signal_locations(lat_data, categ, C, 0.5)
+    ld,sig = pr.random_signal_locations(lat_data, categ, C, 0.5)
     subjects_with_1s = np.where(categ==1)[0]
-    plt.imshow(np.mean(f.field[...,subjects_with_1s],2))
+    plt.imshow(np.mean(ld.field[...,subjects_with_1s],2))
     subjects_with_2s = np.where(categ==2)[0]
-    plt.imshow(np.mean(f.field[...,subjects_with_2s],2))
+    plt.imshow(np.mean(ld.field[...,subjects_with_2s],2))
+    
+    # Mean zero everywhere:
+    ld,sig = pr.random_signal_locations(lat_data, categ, C, 1)
+
     """
     # Compute important constants
     dim = lat_data.masksize

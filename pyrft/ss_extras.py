@@ -106,10 +106,101 @@ def t_ref(template = 'linear'):
     if template == 'linear' or template == 'simes':
         t_func = sa.linear_template
         t_inv = sa.inverse_linear_template
+        t_inv_all = pr.inverse_linear_template_all
     elif template == 'beta' or template == 'b':
         t_func = sa.beta_template
         t_inv = sa.inverse_beta_template
     else:
         raise Exception('The specified template is not available or has been incorrectly input')
 
-    return t_func, t_inv
+    return t_func, t_inv, t_inv_all
+
+def inverse_linear_template_all(pvals, K, do_sort = False):
+  """
+  A function to compute t_k^(-1)(pvals) for k = 1, \dots, K, where t_k(x) = xk/K.
+  Note that the pvals typically need to be sorted before input to this function!
+  ----------------------------------------------------------------------------
+  ARGUMENTS
+  - pvals: np.ndarry,
+      an array of size B by m (B: nperm, m: number of null hypotheses)
+  - K:  int,
+      an integer giving the size of the reference family
+  ----------------------------------------------------------------------------
+  OUTPUT
+  - out:   a numpy array such that out_{bn} = p0_{bn}*K/n 
+  ----------------------------------------------------------------------------
+  EXAMPLES
+    from scipy.stats import norm
+    pvals = norm.cdf(np.random.randn(5))
+    pvals = np.sort(pvals)
+    out =  pr.inverse_linear_template(pvals, 5)
+  ----------------------------------------------------------------------------
+  """
+  # Sort the pvalues unless otherwise specified
+  if do_sort:
+      pvals = np.sort(pvals, axis = 1)
+
+  # Obtain the number of columns of pvals: the total number of hypotheses being tested 
+  if len(pvals.shape) == 1:
+      m = len(pvals)
+  elif len(pvals.shape) == 2:
+      m = pvals.shape[1]
+   
+  # Generate a vector: (1/m,2/m,...,1)
+  normalized_ranks = (np.arange(m)+1)/float(K)
+  
+  return pvals/normalized_ranks
+
+def get_pivotal_stats(pval_matrix, size_of_original_template, template = 'linear' ):
+    """A function to obtain the pivotal statistics given observed p-values
+
+    Parameters
+    ----------
+    pval_matrix:  a numpy.nd array,
+        of size (B, m) where B is the number of permutations and m is the number
+        of hypotheses.
+    size_of_original_template:  int
+        the size of the original template (note that the pvalue matrix may be a
+        subset of the original data, i.e. when running a step down algorithm 
+        so this value may not equal that of the size of the data)
+    template: char,
+        a character array giving the template type. Default is 'linear'.
+
+    Returns
+    -------
+    array-like of shape (B,)
+        A numpy array of of size [B]  containing the pivotal statistics, whose
+        j-th entry corresponds to \psi(g_j.X) with notation of the Blanchard et al 2020.
+      
+    Examples
+    ----------
+    # Comparing to the implementation in the sanssouci package
+    from scipy.stats import norm
+    pvals = norm.cdf(np.random.randn(5,10))
+    out1 =  pr.get_pivotal_stats(pvals, 10)
+    print(out1)
+    out2 = sa.get_pivotal_stats(pvals, sa.inverse_linear_template)
+    print(out2)
+
+    References
+    ----------
+    [1] Blanchard, G., Neuvial, P., & Roquain, E. (2020). Post hoc
+        confidence bounds on false positives using reference families.
+        Annals of Statistics, 48(3), 1281-1303.
+    """
+    if isinstance(template, str):
+        _, _, t_inv_all = pr.t_ref(template)
+    else:
+        raise Exception('The template must be input as a string')
+
+    # Sort permuted p-values (within rows)
+    pval_matrix = np.sort(pval_matrix, axis = 1)
+
+    # Apply the template function
+    # For each feature p, compare sorted permuted p-values to template
+    template_inverse_of_pvals = t_inv_all(pval_matrix, size_of_original_template)
+
+    # Compute the minimum within each row
+    pivotal_stats = np.min(template_inverse_of_pvals, axis = 1)
+
+    return pivotal_stats

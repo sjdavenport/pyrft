@@ -3,6 +3,7 @@ Testing bootstrapping in the linear model
 """
 import pyrft as pr
 import numpy as np
+import sansouci as sa
 Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
 X = pr.group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
 
@@ -13,7 +14,7 @@ orig_pvalues_sorted = np.array([np.sort(np.ravel(orig_pvalues.field))])
 # Get the minimum p-value over voxels and contrasts (include the orignal in the permutation set)
 print(orig_pvalues_sorted[0,0])
     # Obtain the pivotal statistic used for JER control
-print(np.amin(ss.t_inv_linear(orig_pvalues_sorted)))
+print(np.amin(sa.t_inv_linear(orig_pvalues_sorted)))
 
 # %%
 ### One sample, one voxel test
@@ -115,11 +116,11 @@ FPR = number_of_false_positives/niters
 # %% Testing bootstorage
 import pyrft as pr
 import numpy as np
-Dim = (10,10); N = 100; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
+Dim = (8,8); N = 100; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
 X = pr.group_design(categ); C = np.array([1,-1,0]); lat_data = pr.statnoise(Dim,N,4)
 B = 100;
 
-minP, orig_pvalues, pivotal_stats, bs = pr.boot_contrasts(lat_data, X, C, B, ss.t_inv_linear, True, 1)
+minP, orig_pvalues, pivotal_stats, bs = pr.boot_contrasts(lat_data, X, C, B, 'linear', True, 1)
 
 
 for b in np.arange(B):
