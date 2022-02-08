@@ -184,12 +184,11 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
         and a corresponding design matrix selected
     n_bootstraps: int,
         giving the number of bootstraps to do (default is 1000)
-
     niters: int,
       giving the number of iterations to use to estimate the FPR
     pi0:  float,
     simtype: int,
-        either -2, -1 or 1. -2 corresponds to Simes, -1 to ARI, 1 to the
+        either -1 or 1. -2 corresponds to Simes, -1 to ARI, 1 to the
         bootstrap procedure. Default is 1 i.e. the bootstrap.
     alpha: int,
        the alpha level at which to control (default is 0.1)
@@ -224,12 +223,8 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
     # 2D bootstrapping
     dim = (10,10); nsubj = 30; C = np.array([[1,-1,0],[0,1,-1]]);
     FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C)
-    
-    # 2D - Simes
-    dim = (10,10); nsubj = 30; C = np.array([[1,-1,0],[0,1,-1]]);
-    FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C, simtype = -2)
 
-    # 2D - ARI
+    # 2D - parametric
     dim = (10,10); nsubj = 30; C = np.array([[1,-1,0],[0,1,-1]]);
     FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C, simtype = -1)
 
@@ -298,9 +293,6 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
         # Convert the signal to boolean
         signal.field = signal.field == 0
         
-        # Estimate the number of null hypotheses as m (unless using ARI or stepdown!)
-        mestimate = m
-        
         # Run the bootstrap/ARI/Simes
         if simtype == 1:
             # Implement the bootstrap algorithm on the generated data
@@ -334,40 +326,39 @@ def bootfpr(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 10
             orig_pvalues = pr.tstat2pval(orig_tstats, nsubj - n_params)
             
             lambda_quant = alpha
+            alpha_quantile = alpha/m
             
-            # If using ARI calculate the estimate of the number of null hypotheses
-            if simtype == -1:
-                # Run ARI
-                mestimate = pr.compute_hommel_value(np.ravel(orig_pvalues.field), alpha)
-
-            # Calculate the alpha quantile for FWER control
-            lambda_quant = lambda_quant/(mestimate/m)
-            alpha_quantile = alpha/mestimate
+            if do_sd:
+                # Calculate the hommel value for implementing ARI
+                hommel_value = pr.compute_hommel_value(np.ravel(orig_pvalues.field), alpha)
+                
+                # Calculate the alpha quantile for FWER control
+                lambda_quant_sd = lambda_quant/(hommel_value/m)
+                alpha_quantile_sd = alpha/hommel_value
         
         # Calculate the null p-values
         null_pvalues = np.sort(orig_pvalues.field[signal.field])
         
         # Calculate the pivotal statistic on the original data
-        extended_null_pvalues = np.ones(m)
-        extended_null_pvalues[0:len(null_pvalues)] = null_pvalues
-        extended_null_pvalues_tinv = t_inv_all(extended_null_pvalues, mestimate)
-        null_pivotal_statistic = np.amin(extended_null_pvalues_tinv[0:len(null_pvalues)])
+        null_pvalues_tinv = t_inv_all(null_pvalues, m)
+        null_pivotal_statistic = np.amin(null_pvalues_tinv)
+        
+        # Deprecated calculation:
+        #extended_null_pvalues = np.ones(m)
+        #extended_null_pvalues[0:len(null_pvalues)] = null_pvalues
+        #extended_null_pvalues_tinv = t_inv_all(extended_null_pvalues, mestimate)
+        #extended_null_pvalues_tinv = t_inv_all(extended_null_pvalues, m)
+        #null_pivotal_statistic = np.amin(extended_null_pvalues_tinv[0:len(null_pvalues)])
 
         # Check whether there is a JER false rejection or not
         # Use pivotal_stats[0] since it corresponds to the original pivotal statistic
         # (i.e. not bootstrapped)
-        #if pivotal_stats[0] < lambda_quant:
+        # if pivotal_stats[0] < lambda_quant:
         if null_pivotal_statistic < lambda_quant:
             n_falsepositives_jer = n_falsepositives_jer + 1
 
         if np.amin(null_pvalues) < alpha_quantile:
             n_falsepositives_fwer = n_falsepositives_fwer + 1
-
-        # When doing ARI or Simes don't do the additional step down step
-        # Technically ARI is the step down of Simes but we treat them as
-        # separate methods since they run so quickly.
-        if simtype < 0:
-            do_sd = 0
 
         if do_sd:
             if null_pivotal_statistic < lambda_quant_sd:

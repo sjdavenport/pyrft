@@ -141,9 +141,6 @@ def step_down( permuted_pvals, alpha = 0.1, max_number_of_steps = 50, do_fwer = 
     # indicies
     stepdownset = np.arange(m)
     
-    # Store the size of the original template
-    K2use = m
-    
     # Initialize the number of steps through the algorithm
     no_of_steps = 0
     
@@ -163,8 +160,9 @@ def step_down( permuted_pvals, alpha = 0.1, max_number_of_steps = 50, do_fwer = 
              threshold = alpha_quantile
         else:   #JER STEP DOWN
             # Calculate the bootstrapped pivotal statistics
-            pivotal_stats = pr.get_pivotal_stats(permuted_pvals, K2use, template)
-        
+            # Note that the denominator in the template is always m 
+            pivotal_stats = pr.get_pivotal_stats(permuted_pvals, m, template)
+
             # Obtain the lambda quantile of the pivotal statistics
             alpha_quantile = np.quantile(pivotal_stats, alpha)
         

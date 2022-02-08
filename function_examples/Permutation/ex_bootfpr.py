@@ -8,12 +8,12 @@ FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C)
 # %% 1D with signal
 
 # %% 2D - bootstrapping
-dim = (2,2); nsubj = 30; C = np.array([[1,-1,0],[0,1,-1]]);
-FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C)
+dim = (10,10); nsubj = 100; C = np.array([[1,-1,0],[0,1,-1]]);
+FWER_FPR, JER_FPR, FWER_FPR_SD, JER_FPR_SD = pr.bootfpr(dim, nsubj, C, pi0 = 0.5)
 
-# %% 2D - Simes
-dim = (10,10); nsubj = 30; C = np.array([[1,-1,0],[0,1,-1]]);
-FWER_FPR, JER_FPR = pr.bootfpr(dim, nsubj, C, simtype = -2)
+# %% 2D - Parametric
+dim = (10,10); nsubj = 100; C = np.array([[1,-1,0],[0,1,-1]]);
+Simes_FPR, Simes_FPR, ARI_FPR, ARI_FPR = pr.bootfpr(dim, nsubj, C, simtype = -1, pi0 = 0.5)
 
 # %% 2D - ARI - no smoothing
 dim = (10,10); nsubj = 100; C = np.array([[1,-1,0],[0,1,-1]]);

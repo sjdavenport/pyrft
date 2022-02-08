@@ -112,12 +112,12 @@ def bootpower(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 
     Examples
     -----------------
     % Calculate the power using the bootstrap method
-    dim = (25,25); nsubj = 10; C = np.array([[1,-1,0],[0,1,-1]]);
-    power = pr.bootpower(dim, nsubj, C, 4, 0, 100, 1000, 0.8)
+    dim = (4,4); nsubj = 100; C = np.array([[1,-1,0],[0,1,-1]]);
+    power, power_sd = pr.bootpower(dim, nsubj, C, 4, 0, 100, 1000, 0.8)
     
     % Calculate the power using ARI
     dim = (25,25); nsubj = 10; C = np.array([[1,-1,0],[0,1,-1]]);
-    power = pr.bootpower(dim, nsubj, C, 4, 0, 100, 1000, 0.8, -1)
+    power, power_sd = pr.bootpower(dim, nsubj, C, 4, 0, 100, 1000, 0.8, -1)
     """
     # Obtain ordered randomness
     rng = check_random_state(101)
@@ -134,10 +134,7 @@ def bootpower(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 
 
     # Obtain the inverse template function (allowing for direct input as well!)
     if isinstance(template, str):
-        t_func, t_inv = pr.t_ref(template)
-    else:
-        # Allow the inverse function to be an input
-        t_inv = template
+        t_func, _, _ = pr.t_ref(template)
 
     if len(contrast_matrix.shape) == 1:
         n_contrasts = 1
@@ -154,11 +151,12 @@ def bootpower(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 
     
     # Initialize the vector to store the power
     power = np.zeros(5)
+    power_sd = np.zeros(5)
     
      # Calculate TDP ratio for each bootstrap iteration
     for i in np.arange(niters):
         # Keep track of the progress.
-        pr.modul(i,1)
+        pr.modul(i,100)
 
         # Generate the data (i.e. generate stationary random fields)
         lat_data = pr.statnoise(dim,nsubj,fwhm)
@@ -185,12 +183,18 @@ def bootpower(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 
             # Run the bootstrap algorithm
             if simtype == 1:
                 # Implement the bootstrap algorithm on the generated data
-                minp_perm, orig_pvalues, pivotal_stats, _ = pr.boot_contrasts(lat_data, design_2use, contrast_matrix, n_bootstraps, t_inv, replace)
+                minp_perm, orig_pvalues, pivotal_stats, bootstore = pr.boot_contrasts(lat_data, 
+                                                design_2use, contrast_matrix, n_bootstraps, template, 
+                                                                        replace, store_boots = True)
             else:
-                pr.perm_contrasts(lat_data, design_2use, contrast_matrix, n_bootstraps, t_inv)
+                pr.perm_contrasts(lat_data, design_2use, contrast_matrix, n_bootstraps, template)
                 
             # Calculate the lambda alpha level quantile for JER control
             lambda_quant = np.quantile(pivotal_stats, alpha)
+            
+            # Run the step down algorithm
+            lambda_quant_sd, _ = pr.step_down( bootstore, alpha = alpha, 
+                                              do_fwer = 0, template = template)
         
         # Only run this is pi0 < 1 as if it equals 1 then the power is zero
         if pi0 < 1:
@@ -203,22 +207,27 @@ def bootpower(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 
                 n_params = design_2use.shape[1]
                 orig_pvalues = pr.tstat2pval(orig_tstats, nsubj - n_params)
                 
-                if simtype == -1:
-                    # Run ARI
-                    hommel = pr.compute_hommel_value(np.ravel(orig_pvalues.field), alpha)
-                    tfamilyeval = sa.linear_template(alpha, hommel, hommel)
-                elif simtype == -2:
-                    # Run Simes
-                    tfamilyeval = sa.linear_template(alpha, m, m)
+                # Set the lambda quantile for simes
+                lambda_quant = alpha
+                
+                # Run ARI
+                hommel = pr.compute_hommel_value(np.ravel(orig_pvalues.field), alpha)
+                lambda_quant_sd = lambda_quant/(hommel/m)
+                
+            # Calculate the template family at lambda_quant and lambda_quant_sd        
+            tfamilyeval = t_func(lambda_quant, m, m)
+            tfamilyeval_sd = t_func(lambda_quant_sd, m, m)
                 
             # Update the power calculation
-            power = pr.BNRpowercalculation_update(power, tfamilyeval, orig_pvalues, signal, m, nfalse);
+            power = pr.BNRpowercalculation_update(power, tfamilyeval, orig_pvalues, signal, m, nfalse);    
+            power_sd = pr.BNRpowercalculation_update(power_sd, tfamilyeval_sd, orig_pvalues, signal, m, nfalse);
             
     # Calculate the power (when the data is non-null) by averaging over all simulations
     if pi0 < 1:
         power = power/niters
+        power_sd = power_sd/niters
 
-    return power
+    return power, power_sd
 
 def BNRpowercalculation_update(power, thr, orig_pvalues, signal, m, nfalse):
     # a) R = N_m
