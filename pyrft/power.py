@@ -199,9 +199,7 @@ def bootpower(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 
         # Only run this is pi0 < 1 as if it equals 1 then the power is zero
         if pi0 < 1:
             # Calulate the template family
-            if simtype > -1:
-                tfamilyeval = t_func(lambda_quant, m, m)
-            else:
+            if simtype < 0:
                 # Calculate the p-values
                 orig_tstats, _, _ = pr.contrast_tstats_noerrorchecking(lat_data, design_2use, contrast_matrix)
                 n_params = design_2use.shape[1]
