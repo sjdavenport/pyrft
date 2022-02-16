@@ -204,22 +204,22 @@ def bootpower(dim, nsubj, contrast_matrix, fwhm = 0, design = 0, n_bootstraps = 
                 orig_tstats, _, _ = pr.contrast_tstats_noerrorchecking(lat_data, design_2use, contrast_matrix)
                 n_params = design_2use.shape[1]
                 orig_pvalues = pr.tstat2pval(orig_tstats, nsubj - n_params)
-                
+
                 # Set the lambda quantile for simes
                 lambda_quant = alpha
-                
+
                 # Run ARI
                 hommel = pr.compute_hommel_value(np.ravel(orig_pvalues.field), alpha)
                 lambda_quant_sd = lambda_quant/(hommel/m)
-                
+
             # Calculate the template family at lambda_quant and lambda_quant_sd        
             tfamilyeval = t_func(lambda_quant, m, m)
             tfamilyeval_sd = t_func(lambda_quant_sd, m, m)
-                
+
             # Update the power calculation
             power = pr.BNRpowercalculation_update(power, tfamilyeval, orig_pvalues, signal, m, nfalse);    
             power_sd = pr.BNRpowercalculation_update(power_sd, tfamilyeval_sd, orig_pvalues, signal, m, nfalse);
-            
+
     # Calculate the power (when the data is non-null) by averaging over all simulations
     if pi0 < 1:
         power = power/niters
