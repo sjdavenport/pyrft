@@ -164,7 +164,7 @@ def cluster_tdp(data, design, contrast_matrix, mask, n_bootstraps = 100, alpha =
 
 
 def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, fwhm = 4, \
-                      alpha = 0.1, min_cluster_size = 30, cdt = 0.001, method = 'boot'):
+                      alpha = 0.1, min_cluster_size = 30, cdt = 0.001, simtype = 1, template = 'linear', do_sd = 1):
     """ cluster_tdp_brain calculates the TDP (true discovery proportion) within
     clusters of the test-statistic. This is specifically for brain images
     and enables plotting of these images using the nilearn toolbox
@@ -189,6 +189,9 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
 
     # Obtain the number of contrasts
     n_contrasts = contrast_matrix.shape[0]
+    
+    # Obtain the template function
+    t_func, _, _ = pr.t_ref(template)
 
     #Load the data
     masker = NiftiMasker(smoothing_fwhm = fwhm,mask_img = mask, \
@@ -215,28 +218,47 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
     # Obtain a 3D brain image of the p-values for obtaining clusters
     #(squeezing to remove the trailing dimension)
     pvalues_3d = np.squeeze(get_data(masker.inverse_transform(pvalues.transpose())))
-
-     ### Perform Post-hoc inference
-    if method == 'boot':
-        # Run the bootstrapped algorithm
-        _, _, pivotal_stats, _ = pr.boot_contrasts(data, design, contrast_matrix,\
-            n_bootstraps = n_bootstraps, display_progress = 1)
-
-        # Obtain the lambda calibration
-        lambda_quant = np.quantile(pivotal_stats, alpha)
-    else:
-        lambda_quant = alpha
-
+    
     # Calculate the number of voxels in the mask
     n_vox_in_mask = np.sum(mask[:])
+    
+    # Calculate the total number of null hypotheses
+    m = n_contrasts*n_vox_in_mask
 
-    # Gives t_k^L(lambda) = lambda*k/m for k = 1, ..., m
-    thr = sa.linear_template(lambda_quant, n_vox_in_mask, n_vox_in_mask)
+     ### Perform Post-hoc inference
+    if simtype == 1:
+        # Run the bootstrapped algorithm
+        _, _, pivotal_stats, bootstore = pr.boot_contrasts(data, design, contrast_matrix,\
+                n_bootstraps = n_bootstraps, display_progress = 1, store_boots = do_sd)
+                
+        # Obtain the lambda calibration
+        lambda_quant = np.quantile(pivotal_stats, alpha)
+        
+        if do_sd:
+            lambda_quant_sd, _ = pr.step_down( bootstore, alpha = alpha, 
+                                              do_fwer = 0, template = template)
+    else:
+        # Calculate the lambda quantile for JER control
+        lambda_quant = alpha
+        if do_sd:
+            hommel_value = pr.compute_hommel_value(np.ravel(pvalues), alpha)
+                
+            # Calculate the lambda quantile for JER control (with stepdown)
+            lambda_quant_sd = lambda_quant/(hommel_value/m)
+
+    # Gives t_k(lambda) = lambda*k/m for k = 1, ..., m
+    thr = t_func(lambda_quant, m, m)
+
+    if do_sd == 1:
+        thr_sd = t_func(lambda_quant_sd, m, m)
 
     ### Calculate the TDP within each cluster
-
     # Initialize the matrix to store the tdp
     tdp_bounds = np.zeros(pvalues_3d.shape)
+    if do_sd:
+        tdp_bounds_sd = np.zeros(pvalues_3d.shape)
+    else:
+        tdp_bounds_sd = -1
 
     # Convert the mask to logical
     mask = mask > 0
@@ -259,5 +281,10 @@ def cluster_tdp_brain(imgs, design, contrast_matrix, mask, n_bootstraps = 100, f
             print(region_idx.shape)
             print(tdp_bounds[region_idx, l].shape)
             tdp_bounds[region_idx, l] = (np.sum(region_idx) - bound)/np.sum(region_idx)
+            
+            # Compute the step down TP bound
+            if do_sd:
+                bound_sd = sa.max_fp(pvalues_3d[region_idx, l], thr_sd)
+                tdp_bounds_sd[region_idx, l] = (np.sum(region_idx) - bound_sd)/np.sum(region_idx)
 
-    return tdp_bounds, masker
+    return tdp_bounds, tdp_bounds_sd, masker
