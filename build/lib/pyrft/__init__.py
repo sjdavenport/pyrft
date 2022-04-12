@@ -6,7 +6,6 @@ from .ss_extras import *
 from .cluster_inference import *
 from .fdp import *
 from .power import *
-from .plotting import *
 
 
 __all__ = [

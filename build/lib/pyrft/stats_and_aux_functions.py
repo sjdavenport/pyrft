@@ -191,11 +191,15 @@ def contrast_tstats_noerrorchecking(lat_data, design, contrast_matrix):
     -----------------
     lat_data:  an object of class field
           the data for N subjects on which to calculate the contrasts
-    design: a numpy.ndarray of size (N,p)
+    X: a numpy.ndarray of size (N,p)
         giving the covariates (p being the number of parameters)
-    contrast_matrix: a numpy.ndarray of size (L,p)
+    C: a numpy.ndarray of size (L,p)
         corresponding to the contrast matrix, such that which each row is a
         contrast vector (where L is the number of constrasts)
+    check_error:  Bool,
+          determining whether to perform error checking or not  (not always
+          necessary e.g. during a permutation loop etc) default  is 1 i.e. to
+          perform error checking
 
     Returns
     -----------------
@@ -207,20 +211,20 @@ def contrast_tstats_noerrorchecking(lat_data, design, contrast_matrix):
     -----------------
     # One Sample tstat
     Dim = (3,3); N = 30; categ = np.zeros(N)
-    X = pr.group_design(categ); C = np.array([[1]]); lat_data = pr.wfield(Dim,N)
-    tstat = contrast_tstats_noerrorchecking(lat_data, X, C)
+    X = group_design(categ); C = np.array([[1]]); lat_data = pr.wfield(Dim,N)
+    tstat = constrast_tstats_noerrorchecking(lat_data, X, C)
     # Compare to mvtstat:
     print(tstat.field.reshape(lat_data.masksize)); print(mvtstat(lat_data.field)[0])
 
     # Two Sample tstat
     Dim = (10,10); N = 30; categ = np.random.binomial(1, 0.4, size = N)
     X = group_design(categ); C = np.array([[1,-1]]); lat_data = pr.wfield(Dim,N)
-    tstats = contrast_tstats_noerrorchecking(lat_data, X, C)
+    tstats = constrast_tstats_noerrorchecking(lat_data, X, C)
 
     # 3 Sample tstat (lol)
     Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
     X = group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
-    tstats = contrast_tstats_noerrorchecking(lat_data, X, C)
+    tstats = constrast_tstats_noerrorchecking(lat_data, X, C)
     """
     # Calculate the number of contrasts
     n_contrasts = contrast_matrix.shape[0]  # constrasts
@@ -297,7 +301,7 @@ def fwhm2sigma(fwhm):
 
 
 def group_design(categ):
-    """ A function to compute the covariate matrix for a given set of categories
+    """ A function to compute the covariate matrix X for a given set of categories
 
     Parameters
     ------------------
@@ -310,11 +314,11 @@ def group_design(categ):
 
     Returns
     ------------------
-    design: a design matrix that can be used to assign the correct categories
+    X: a design matrix that can be used to assign the correct categories
 
     Examples
     ------------------
-    categ = (0,1,1,0); pr.group_design(categ)
+    categ = (0,1,1,0); group_design(categ)
     """
     # Calculate the number of subjects
     nsubj = len(categ)
