@@ -14,7 +14,7 @@ see https://www.math.univ-toulouse.fr/~pneuvial/sanssouci.html and our upcoming 
     * [Dependencies](#dependencies)
 
 ## Getting Started <a name="folderstruct"></a>
-The majority of the code is available in the pyrft subfolder. The best way to get started is to work through the Jupyter Notebook: [contrast_examples.ipynb] (https://github.com/sjdavenport/pyrft/blob/master/examples/contrasts_example.ipynb) available in the Examples folder. 
+The majority of the code is available in the pyrft subfolder. The best way to get started is to work through the Jupyter Notebook: [contrast_examples.ipynb](https://github.com/sjdavenport/pyrft/blob/master/examples/contrasts_example.ipynb) available in the Examples folder. 
 
 ## Code Structure <a name="codestruct"></a>
 The code for this package is contained within the pyrft subfolder. This section contains a general description of the files with the most important functions.
