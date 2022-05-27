@@ -96,9 +96,9 @@ def contrast_tstats(lat_data, design, contrast_matrix, check_error = 1):
           giving the data where Dim is the spatial dimension and N is the number of subjects
           if a field then the fibersize must be 1 and the final dimension must be
           the number of subjects
-    X: a numpy.ndarray of size (N,p)
+    design: a numpy.ndarray of size (N,p)
         giving the covariates (p being the number of parameters)
-    C: a numpy.ndarray of size (L,p)
+    contrast_matrix: a numpy.ndarray of size (L,p)
         corresponding to the contrast matrix, such that which each row is a
         contrast vector (where L is the number of constrasts)
     check_error:  Bool,
@@ -111,8 +111,10 @@ def contrast_tstats(lat_data, design, contrast_matrix, check_error = 1):
     tstat_field: an object of class field
           which has spatial size the same as input data and fibersize equal
           to the number of contrasts
-    residuals: a
-
+    residuals: a numpy array
+        of shape (dim, nsubj) containing the residuals i.e. residuals(..., I)
+        provides the imagewise residuals for the Ith subject
+        
     Examples
     -----------------
     # One Sample tstat
@@ -150,6 +152,28 @@ def contrast_tstats(lat_data, design, contrast_matrix, check_error = 1):
 def contrast_error_checking(lat_data,design,contrast_matrix):
     """ A function which performs error checking on the contrast data to ensure
     that it has the right dimensions.
+
+        Parameters
+    -----------------
+    lat_data:  a numpy.ndarray of shape (Dim, N) or an object of class field
+          giving the data where Dim is the spatial dimension and N is the number 
+          of subjects if a field then the fibersize must be 1 and the final 
+          dimension must be the number of subjects
+    design: a numpy.ndarray of size (N,p)
+        giving the covariates (p being the number of parameters)
+    contrast_matrix: a numpy.ndarray of size (L,p)
+        corresponding to the contrast matrix, such that which each row is a
+        contrast vector (where L is the number of constrasts)
+        
+    Returns
+    -----------------
+    contrast_matrix: a numpy.ndarray of size (L,p)
+        corresponding to the contrast matrix, such that which each row is a
+        contrast vector (where L is the number of constrasts)
+    nsubj: an int
+        giving the number of subjects
+    n_params: an int.
+        giving the number of parameters in the model
     """
     ### Error Checking
     # Ensure that C is a numpy array
@@ -202,25 +226,31 @@ def contrast_tstats_noerrorchecking(lat_data, design, contrast_matrix):
     tstat_field: an object of class field
           which has spatial size the same as input data and fibersize equal
           to the number of contrasts
+    residuals: a numpy array
+        of shape (dim, nsubj) containing the residuals i.e. residuals(..., I)
+        provides the imagewise residuals for the Ith subject
+    Cbeta_field: an object of class field
+        which has shape (dim, ncontrasts), for each contrast this gives the 
+        c^Tbetahat image.
 
     Examples
     -----------------
     # One Sample tstat
     Dim = (3,3); N = 30; categ = np.zeros(N)
     X = pr.group_design(categ); C = np.array([[1]]); lat_data = pr.wfield(Dim,N)
-    tstat = contrast_tstats_noerrorchecking(lat_data, X, C)
+    tstat, residuals, Cbeta_field = pr.contrast_tstats_noerrorchecking(lat_data, X, C)
     # Compare to mvtstat:
     print(tstat.field.reshape(lat_data.masksize)); print(mvtstat(lat_data.field)[0])
 
     # Two Sample tstat
     Dim = (10,10); N = 30; categ = np.random.binomial(1, 0.4, size = N)
     X = group_design(categ); C = np.array([[1,-1]]); lat_data = pr.wfield(Dim,N)
-    tstats = contrast_tstats_noerrorchecking(lat_data, X, C)
+    tstat, residuals, Cbeta_field = pr.contrast_tstats_noerrorchecking(lat_data, X, C)
 
     # 3 Sample tstat (lol)
     Dim = (10,10); N = 30; categ = np.random.multinomial(2, [1/3,1/3,1/3], size = N)[:,1]
     X = group_design(categ); C = np.array([[1,-1,0],[0,1,-1]]); lat_data = pr.wfield(Dim,N)
-    tstats = contrast_tstats_noerrorchecking(lat_data, X, C)
+    tstat, residuals, Cbeta_field = pr.contrast_tstats_noerrorchecking(lat_data, X, C)
     """
     # Calculate the number of contrasts
     n_contrasts = contrast_matrix.shape[0]  # constrasts
