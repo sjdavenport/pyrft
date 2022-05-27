@@ -8,7 +8,7 @@ This package performs inference on in high-dimensional linear models using resam
     * [fdp.py](#fdp)
     * [permutation.py](#permutation)
     * [power.py](#power)
-    * [random_field_generation]#(rft)
+    * [random_field_generation](#rft)
 * [Set Up](#setup)
     * [Dependencies](#dependencies)
 
