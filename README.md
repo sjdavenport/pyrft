@@ -35,5 +35,7 @@ This file contains functions to compare the power of bootstrap and parametric me
 This file contains functions to generate noisy random fields.  
 
 ## Set Up <a name="setup"></a>
+In order to install this package you'll need to download the package, go to the pyrft folder and run pip install. Many of the functions rely on code from the [SanSouci](https://github.com/pneuvial/sanssouci.python) python package so we recommend that you install that as well - this can be done similarly.  
+
 If you have any difficulties getting this code to run or have any questions
-feel free to get in touch with me at sdavenport(AT)ucsd.edu or via twitter @BrainStatsSam.
+feel free to get in touch with me at sdavenport(AT)ucsd.edu or via twitter [@BrainStatsSam](https://twitter.com/BrainStatsSam).
