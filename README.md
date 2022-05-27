@@ -26,7 +26,7 @@ This file contains functions for calculating clusters and perform FDP inference 
 This file contains functions for running the Benjamini-Hochberg procedure to control the FDR as well as functions to run step-down algorithms.
 
 ### permutation.py <a name="permutation"></a>
-This file contains functions to run permutation and bootstrap resampling. 
+This file contains functions to run permutation and bootstrap resampling. This can be applied to control FWER or to provide control of the False Discovery Proporition which is simultaneous over all subsets.
 
 ### power.py <a name="power"></a>
 This file contains functions to compare the power of bootstrap and parametric methods as well as to generate signal with random locations.
