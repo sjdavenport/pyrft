@@ -1,5 +1,5 @@
 # PyRFT
-This package performs inference on in high-dimensional linear models using resampling method. In particular it provides post-hoc inference for multiple testing methods. This packages requires the python package SansSocui to run - see the Setup section for how to download and install this.
+This package performs inference on in high-dimensional linear models using resampling method. In particular it provides post-hoc inference for multiple testing methods. For further details on the methodology see https://www.math.univ-toulouse.fr/~pneuvial/sanssouci.html. This package requires the python package SansSocui to run - see the Setup section for how to download and install this.
 
 ## Table of contents
 * [Folder Structure](#folderstruct)
