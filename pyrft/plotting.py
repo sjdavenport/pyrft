@@ -6,7 +6,7 @@ import numpy as np
 import sanssouci as sa
 import matplotlib.pyplot as plt
 
-def fdp_plot(pvalues, thr_list, labels, colors, linestyle, number2plot, saveloc, dolegend = 1):
+def fdp_plot(pvalues, thr_list, labels, colors, linestyle, number2plot, saveloc, dolegend = 1, vertline = 0, vertlinestyle = '-', idlinestyle = 'dashed'):
     """ A function to compute the fdp and tdp confidence envelope plots
 
     Parameters
@@ -58,8 +58,10 @@ def fdp_plot(pvalues, thr_list, labels, colors, linestyle, number2plot, saveloc,
 
     # Plot the false discovery proportion and its bound
     plt.subplot(121)
+    if vertline > 0:
+        plt.axvline(x = vertline, color = 'silver', linestyle = vertlinestyle)
     for i in np.arange(len(thr_list)):
-        plt.plot(max_FDP[i], label=labels[i], color = colors[i], linestyle = linestyle[i])
+        plt.plot(max_FDP[i], label=labels[i], color = colors[i], linestyle = linestyle[i], linewidth = 2)
     plt.title('Upper bound on FDP')
     plt.xlim(1, number2plot)
     plt.xlabel('k')
@@ -68,12 +70,14 @@ def fdp_plot(pvalues, thr_list, labels, colors, linestyle, number2plot, saveloc,
 
     # Plot the true postives and their bound
     plt.subplot(122)
-    plt.plot(np.arange(np.ceil(1.1*maxminTP)), np.arange(np.ceil(1.1*maxminTP)), label = 'identity', linestyle = 'dashed', color = 'black')
+    plt.plot(np.arange(np.ceil(1.1*maxminTP)), np.arange(np.ceil(1.1*maxminTP)), label = 'identity', linestyle = idlinestyle, color = 'black')
+    if vertline > 0:
+        plt.axvline(x = vertline, color = 'silver', linestyle = vertlinestyle)
     for i in np.arange(len(thr_list)):
-        plt.plot(min_TP[i], label=labels[i], color = colors[i], linestyle = linestyle[i])
+        plt.plot(min_TP[i], label=labels[i], color = colors[i], linestyle = linestyle[i], linewidth = 2)
     plt.title('Lower bound on TP')
     if dolegend == 1:
-        plt.legend(loc="lower right")
+        plt.legend(loc="lower right", fontsize = '12')
     plt.xlim(1, number2plot)
     plt.ylim(0, np.ceil(1.1*maxminTP))
     plt.xlabel('k')
